@@ -1,4 +1,4 @@
-# Keelacademy: Learning Experience Design
+# Keelacademy: Learning Experience Design (v2)
 
 How students move through the four layers of each chapter.
 
@@ -6,31 +6,29 @@ How students move through the four layers of each chapter.
 
 ## The Core Problem
 
-Four content types (novel, build-along, lexicon, DSA) could feel like four disconnected courses sharing a roof. The student's experience should feel like one seamless flow where each layer appears at the exact moment they need it, not like switching between tabs.
+Four content types (novel, build-along, lexicon, emerging DSA) could feel like four disconnected courses sharing a roof. The student's experience should feel like one seamless flow where each layer appears at the exact moment they need it, not like switching between tabs.
 
 ---
 
 ## The Chapter Loop
 
-Every chapter follows the same rhythm. Predictable structure reduces cognitive load (University of South Carolina HIDOC Framework, 2025: "predictable unit structures increase a student's fluency in finding and engaging each required element"). Students learn the rhythm once and then it becomes invisible.
+Every chapter follows the same rhythm. Predictable structure reduces cognitive load. Students learn the rhythm once and then it becomes invisible.
 
 ### The Flow (per chapter):
 
-**Step 1: READ** - The Novel Chapter (30-45 min)
-See the mistake. See the fix. Feel the consequences.
-Terms highlighted inline, linking to lexicon entries.
+**Step 1: READ** (30-45 min)
+The Novel chapter. See the mistake. See the fix. Feel the consequences.
+Terms highlighted inline, linking to lexicon and DSA entries.
 
-**Step 2: LOOK UP** - Lexicon + DSA (on demand)
-Student hits a term they don't know, reads the entry, returns to the novel. No context switch.
+**Step 2: LOOK UP** (on demand)
+Lexicon + Emerging DSA. Student hits a term they don't know, reads the entry in a slide-over panel, returns to the novel. No context switch. No page navigation.
 
-**Step 3: BUILD** - The Build-Along (2-6 hours)
-Spec. Tests. Implement. No hand-holding.
-Stuck? Re-read the relevant novel section. Stuck on a concept? Open the lexicon/DSA entry.
+**Step 3: BUILD** (2-6 hours)
+The Build-Along. Spec. Tests. Implement. No hand-holding.
+Stuck? Re-read the relevant novel section. Stuck on a concept? Open the lexicon/DSA entry from the "Concepts in this chapter" sidebar.
 
-**Step 4: COMPARE** - Reference Implementation (30 min)
-Unlocks after tests pass. "Here's how we did it." Annotated with reasoning for key decisions.
-
-This is not four separate pages they navigate between. It is one continuous experience where the supporting layers are accessible inline.
+**Step 4: COMPARE** (30 min)
+Reference Implementation. Unlocks after tests pass. Annotated with reasoning for key decisions and common divergences from what students likely wrote.
 
 ---
 
@@ -40,49 +38,66 @@ This is not four separate pages they navigate between. It is one continuous expe
 
 Each chapter is one scrollable page with the novel as the main content. The other layers are accessed contextually:
 
-**Inline Term Links (Novel to Lexicon/DSA)**
+**Inline Term Links (Novel > Lexicon/DSA)**
 
-When the novel mentions a production concept or DSA term for the first time, it is highlighted as a link. Clicking opens a slide-over panel (not a new page) with the lexicon or DSA entry. Students read it, close the panel, and continue the novel without losing their place.
+When the novel mentions a production concept or DSA term for the first time, it is highlighted as a link. Clicking opens a slide-over panel (not a new page) with the entry. Students read it, close the panel, and continue the novel without losing their place.
 
-This mirrors how footnotes work in good non-fiction or how documentation sites use sidebars. The student never leaves the story to go look something up.
+This mirrors how footnotes work in good non-fiction. The student never leaves the story to look something up.
 
 **Build-Along Section (Below the Novel)**
 
-After the novel chapter ends, the same page continues with the build-along spec. The transition is clear: a visual break (horizontal rule, different background tone) and a heading like "Now build it." The spec, test instructions, and success criteria live here.
+After the novel chapter ends, the same page continues with the build-along spec. The transition is clear: a visual break and a heading shift ("Now build it."). The spec, test instructions, and success criteria live here.
 
 **Reference Implementation (Gated)**
 
-A collapsed section below the build-along that expands only after the student marks tests as passing (honor system, or automated if you build test integration later). It shows the reference code with annotations explaining key decisions.
+A collapsed section below the build-along that expands only after the student marks tests as passing (honor system initially, automated test integration later). Shows the reference code with annotations explaining key decisions.
 
 ### Navigation: The Chapter Sidebar
 
-A persistent left sidebar showing:
+A persistent left sidebar showing progress through 16 chapters across 5 parts:
 
 ```
+
 Part I: Foundation
-  [x] Chapter 1: The First Commit
-  [x] Chapter 2: The Data Layer
-  [>] Chapter 3: Authentication          <-- current
-  [ ] Chapter 4: Talking to an LLM
-  ...
+[x] Chapter 1: The First Commit
+[x] Chapter 2: The Extension Chain
+[x] Chapter 3: The First Request
+[>] Chapter 4: The Frontend Shell <-- current
 
-Part II: The Chat Engine
-  [ ] Chapter 5: Streaming Chat
-  ...
+Part II: The Intelligence Layer
+[ ] Chapter 5: The Model Runtime
+[ ] Chapter 6: Streaming
+[ ] Chapter 7: The App Execution Pipeline
+[ ] Chapter 8: Content Moderation
+
+Part III: The Workflow Engine
+[ ] Chapter 9: The Graph Engine
+[ ] Chapter 10: The Intelligent Nodes
+[ ] Chapter 11: Triggers and Autonomy
+[ ] Chapter 12: Human-in-the-Loop
+
+Part IV: Knowledge and Retrieval
+[ ] Chapter 13: The Indexing Pipeline
+[ ] Chapter 14: The Retrieval Engine
+
+Part V: Security and Production
+[ ] Chapter 15: The Plugin Daemon
+[ ] Chapter 16: The Production Deploy
+
 ```
 
-Checkmarks for complete, arrow for current, empty for upcoming. This is the Codecademy/Launch School pattern: a linear path with clear progress. No branching, no choices. One path forward.
+Checkmarks for complete, arrow for current, empty for upcoming. Linear path with clear progress. No branching, no choices. One path forward.
 
 ### The Lexicon and DSA: Standalone Reference (Also)
 
-While lexicon and DSA entries appear inline during the novel, they also exist as a standalone searchable reference. Students should be able to:
+While entries appear inline during the novel via slide-over panels, they also exist as a standalone searchable reference. Students can:
 
 - Browse all terms alphabetically
 - Search for a specific concept
 - See which chapter introduced it
 - Revisit any entry without re-reading the novel
 
-Think of it as a dual-access pattern: appears in context during the flow, also available independently for review.
+Dual-access pattern: appears in context during the flow, available independently for review.
 
 ---
 
@@ -90,18 +105,18 @@ Think of it as a dual-access pattern: appears in context during the flow, also a
 
 ### Chapter Progress (Not Gamification)
 
-Research shows (Ruzuku, 2026: study of 32,000 courses) that milestone-based progress outperforms gamification (badges, XP, streaks) for serious learners. Keelacademy students are adults building careers, not children collecting coins.
+Milestone-based progress outperforms gamification (badges, XP, streaks) for serious adult learners. Keelacademy students are building careers, not collecting coins.
 
-**What works for this audience:**
+**What works:**
 
 - Simple progress bar per chapter (novel read, build started, tests passing, complete)
 - Chapter completion count ("7 of 16 chapters complete")
-- A timeline or vertical progress track showing the full journey
+- Part completion milestones ("Part II complete. The intelligence layer is live.")
 
 **What to avoid:**
 
 - Badges, points, leaderboards (trivializes serious material)
-- Streaks (punishes life happening)
+- Streaks (punishes life happening; incompatible with self-paced)
 - Unlocking animations (patronizing for adults)
 
 ### The Journey Map (Course Overview)
@@ -109,39 +124,79 @@ Research shows (Ruzuku, 2026: study of 32,000 courses) that milestone-based prog
 When students view the full curriculum, show a vertical timeline with chapters as nodes:
 
 ```
-[x] Ch 1: The First Commit .............. Foundation
- |
-[x] Ch 2: The Data Layer ................ Foundation
- |
-[>] Ch 3: Authentication ................ Foundation
- |
---- Part II: The Chat Engine ---
- |
-[ ] Ch 4: Talking to an LLM ............. Chat Engine
- |
-[ ] Ch 5: Streaming Chat ................ Chat Engine
- |
-[ ] Ch 6: The Frontend Comes Alive ...... Chat Engine
- |
---- Part III: Knowledge Base / RAG ---
- |
-[ ] Ch 7: Eating Documents .............. RAG
- |
-...
+
+--- Part I: Foundation ---
+|
+[x] Ch 1: The First Commit
+| Monorepo, app factory, Docker, CI
+|
+[x] Ch 2: The Extension Chain
+| 28 extensions, config system, gevent
+|
+[x] Ch 3: The First Request
+| Blueprints, repository pattern, multi-tenancy
+|
+[>] Ch 4: The Frontend Shell
+| Next.js, TanStack Query, Zustand, auth
+|
+--- Part II: The Intelligence Layer ---
+|
+[ ] Ch 5: The Model Runtime
+| Provider abstraction, 6-stage pipeline
+|
+[ ] Ch 6: Streaming
+| SSE, uniform chunk contract, backpressure
+|
+[ ] Ch 7: The App Execution Pipeline
+| Generator > Runner > Queue > TaskPipeline
+|
+[ ] Ch 8: Content Moderation
+| Input/output moderation as pipeline stage
+|
+--- Part III: The Workflow Engine ---
+|
+[ ] Ch 9: The Graph Engine
+| DAG traversal, node factory, variable pool
+|
+[ ] Ch 10: The Intelligent Nodes
+| LLM, code, HTTP, tool, knowledge retrieval
+|
+[ ] Ch 11: Triggers and Autonomy
+| Schedule, webhook, plugin triggers
+|
+[ ] Ch 12: Human-in-the-Loop
+| Pause/resume, checkpoints, parallel join
+|
+--- Part IV: Knowledge and Retrieval ---
+|
+[ ] Ch 13: The Indexing Pipeline
+| Extract, clean, split, embed, store, summarize
+|
+[ ] Ch 14: The Retrieval Engine
+| Hybrid search, reranking, vector adapters
+|
+--- Part V: Security and Production ---
+|
+[ ] Ch 15: The Plugin Daemon
+| Go daemon, backwards invocation, sandbox, SSRF
+|
+[ ] Ch 16: The Production Deploy
+| Nginx, OTel, Sentry, graceful shutdown
+
 ```
 
-Each node shows: title, part, completion status, and a one-line description of what gets built. Students can see the full path, where they are, and what is ahead. This creates the "I can see the summit" motivation that linear courses provide (ecampusontario research on Learning Journey Maps, 2024).
+Each node shows: title, part, completion status, and a one-line description of what gets built. Students see the full path, where they are, and what is ahead.
 
 ### Content Type Differentiation
 
-Each layer needs a distinct visual identity so students always know "what kind of content am I looking at" without thinking:
+Each layer needs a distinct visual identity so students always know what kind of content they're looking at:
 
-| Layer       | Visual Signal                                                                                     | Feel       |
-| ----------- | ------------------------------------------------------------------------------------------------- | ---------- |
-| Novel       | Serif or readable sans-serif, generous line height, warm tone, slightly wider measure. Book-like. | Reading    |
-| Build-Along | Monospace for code, tighter spacing, terminal-like code blocks, dark background code.             | Doing      |
-| Lexicon     | Card-based, clean sans-serif, bordered panels. Reference-book.                                    | Looking up |
-| DSA         | Diagrams, annotated code, complexity tables. Textbook but concise.                                | Studying   |
+| Layer        | Visual Signal                                                                    | Feel                 |
+| ------------ | -------------------------------------------------------------------------------- | -------------------- |
+| Novel        | Readable serif or sans-serif, generous line height, warm tone, wider measure     | Reading a book       |
+| Build-Along  | Monospace for code, tighter spacing, terminal-like blocks, dark code backgrounds | Doing the work       |
+| Lexicon      | Card-based, clean sans-serif, bordered panels, compact                           | Looking something up |
+| Emerging DSA | Diagrams, annotated code, complexity tables, algorithm visualizations            | Studying a mechanism |
 
 The visual shift tells the brain "you are in a different mode now" without requiring conscious thought.
 
@@ -149,52 +204,87 @@ The visual shift tells the brain "you are in a different mode now" without requi
 
 ## Transitions Between Layers
 
-### Novel to Lexicon (Seamless)
+### Novel > Lexicon (Seamless)
 
-Term appears highlighted in the novel text. Student clicks. Slide-over panel appears from the right (300ms ease-out) with the entry. Student reads. Closes panel (or clicks away). Continues reading exactly where they were.
+Term appears highlighted in the novel text. Student clicks. Slide-over panel appears from the right (300ms ease-out). Student reads. Closes panel (or clicks away). Continues reading exactly where they were.
 
-No page navigation. No context switch. The novel is the home base and lexicon visits are brief excursions.
+No page navigation. No context switch. The novel is home base and lexicon visits are brief excursions.
 
-### Novel to Build-Along (Clear Boundary)
+### Novel > Build-Along (Clear Boundary)
 
 The novel ends. A clear visual break:
 
-"Now build it."
-Here is what the senior asked the junior to produce. Now it is your turn.
+> "Now build it."
+> Here is what the senior asked the junior to produce. Now it is your turn.
 
-Then the spec, tests, and instructions. The student knows: reading mode is over, building mode starts. Different visual treatment (code-focused layout) reinforces the shift.
+Then the spec, tests, and instructions. Different visual treatment (code-focused layout) reinforces the mode shift.
 
-### Build-Along to Lexicon/DSA (Available, Not Forced)
+### Build-Along > Lexicon/DSA (Available, Not Forced)
 
-While building, students will encounter things they need to look up. The same slide-over panel is available from the build-along section. Highlighted terms in the spec link to their entries.
+While building, the same slide-over panel is available. Highlighted terms in the spec link to their entries. Additionally, each build-along section has a "Concepts in this chapter" sidebar showing all relevant lexicon and DSA entries for quick access.
 
-Additionally, each build-along section has a "Concepts in this chapter" sidebar showing all lexicon and DSA entries relevant to the current chapter. Quick access without searching.
+### Build-Along > Reference Implementation (Earned)
 
-### Build-Along to Reference Implementation (Earned)
+Tests pass. Collapsed section expands. The reveal creates a small moment of satisfaction: "I did it, now let me see how they did it."
 
-Tests pass. Collapsed section expands (or becomes clickable). The reveal creates a small moment of satisfaction: "I did it, now let me see how they did it."
+Annotations in the reference code explain divergences from what students likely wrote and why the reference chose a different approach.
 
-Annotations in the reference code explain divergences from what students likely wrote and why.
+---
+
+## Self-Paced Design Considerations
+
+### No Calendar Pressure
+
+- No deadlines, no cohorts, no "you're behind" messaging
+- Progress persists indefinitely
+- Students can pause mid-chapter and return days or weeks later
+- The build-along state (which tests pass) persists between sessions
+
+### Chapter Independence Within Parts
+
+- Chapters within a part build on each other (must be sequential)
+- The system compiles and runs at the end of each part (natural stopping points)
+- Students can take a break between parts without losing momentum
+
+### Estimated Time Per Chapter
+
+| Part             | Chapters | Estimated Hours Per Chapter | Part Total  |
+| ---------------- | -------- | --------------------------- | ----------- |
+| I. Foundation    | 1-4      | 4-8 hours                   | 16-32 hours |
+| II. Intelligence | 5-8      | 6-10 hours                  | 24-40 hours |
+| III. Workflows   | 9-12     | 8-12 hours                  | 32-48 hours |
+| IV. Knowledge    | 13-14    | 8-12 hours                  | 16-24 hours |
+| V. Production    | 15-16    | 6-10 hours                  | 12-20 hours |
+
+**Total: 100-164 hours of work.** At 10 hours/week: 10-16 weeks. At 20 hours/week: 5-8 weeks. No prescribed pace.
+
+### Progress Signals (Not Deadlines)
+
+- "You've completed 4 of 16 chapters"
+- "Part I complete. Your system boots, authenticates, and serves requests."
+- "Part III complete. Workflows execute autonomously. HITL pauses and resumes."
+- No "you haven't logged in for 5 days" emails. No guilt mechanics.
 
 ---
 
 ## Mobile Considerations
 
-- Novel chapters: fully readable on mobile (it is just text)
-- Build-along: link to open in desktop (coding on mobile is not realistic)
+- Novel chapters: fully readable on mobile (it's text)
+- Build-along: banner suggesting desktop ("This section involves coding. Best experienced on a larger screen.")
 - Lexicon/DSA: slide-over becomes full-screen modal on mobile
 - Progress sidebar: collapses to a top progress bar on mobile
+- Journey map: becomes a vertical scroll on mobile (works naturally)
 
 ---
 
 ## Summary: The Student's Experience
 
-1. They open Chapter 3.
-2. They read the novel. The junior implements JWT auth in localStorage. The senior explains XSS token theft. The term "session-based auth" is highlighted. The student clicks it, reads the lexicon entry (30 seconds), closes the panel, keeps reading.
-3. The novel ends with the senior's corrected approach.
-4. The page transitions to "Now build it." The spec says: implement registration, login, sessions, secure cookies. The test suite is linked.
-5. They code for 2-4 hours. They get stuck on Redis session storage. They open the "Concepts in this chapter" sidebar, read the "Redis as session store" entry.
-6. Tests pass. The reference implementation unlocks. They compare their approach, notice two differences, understand why.
-7. Chapter 3 marked complete. Chapter 4 becomes active on the sidebar.
+1. They open Chapter 9: The Graph Engine.
+2. They read the novel. The junior builds a workflow engine that executes nodes sequentially. The senior explains why parallel branches need topological ordering. The term "DAG traversal" is highlighted. They click it, read the DSA entry (topological sort with code example), close the panel, keep reading.
+3. The novel ends with the senior's corrected design: a GraphEngine that dispatches parallel branches via gevent greenlets and uses a VariablePool for node-to-node data passing.
+4. The page transitions to "Now build it." The spec says: implement GraphEngine, NodeFactory, BaseNode, VariablePool. Execute a 5-node graph with one parallel branch. The test suite is linked.
+5. They code for 4-6 hours. They get stuck on the variable selector syntax. They open the "Concepts in this chapter" sidebar, read the "Variable Pool" lexicon entry.
+6. Tests pass. The reference implementation unlocks. They compare their graph traversal approach, notice the engine uses a generator pattern they hadn't considered, understand why.
+7. Chapter 9 marked complete. Chapter 10 becomes active on the sidebar.
 
 One page. One flow. Four layers accessed contextually. No app-switching, no tab management, no "where was I."
