@@ -1,295 +1,376 @@
+```markdown
 # Kairo: Non-Functional Requirements
 
-**Author:** Samuel Ochaba
-**Status:** Accepted
-**Created:** 2026-07-05
+> Version 2.0 (Source-Verified)
+> Author: Samuel Ochaba
+> Status: Accepted
 
 ---
 
 ## 1. Performance
 
-### Latency Targets
+### 1.1 API Latency
 
-| Operation                           | Target (p95)            | Rationale                                                                     |
-| ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| API response (non-streaming)        | < 200ms                 | Standard web app responsiveness                                               |
-| Time to first token (chat)          | < 1500ms                | Includes LLM provider network round-trip; user perceives "thinking" beyond 2s |
-| Time to first token (workflow)      | < 2000ms                | Graph parsing + first node startup                                            |
-| SSE event delivery                  | < 50ms after generation | Internal overhead only; LLM generation speed is external                      |
-| Document chunk indexing (per chunk) | < 500ms                 | Embedding API call dominates                                                  |
-| Vector similarity search            | < 100ms                 | pgvector with HNSW index, < 100K vectors                                      |
-| Page load (frontend)                | < 2s (LCP)              | Next.js with code splitting                                                   |
+| Endpoint Category                   | P50 Target | P99 Target | Notes                                 |
+| ----------------------------------- | ---------- | ---------- | ------------------------------------- |
+| CRUD operations                     | < 50ms     | < 200ms    | Standard database reads/writes        |
+| LLM streaming (time to first token) | < 500ms    | < 2s       | Dominated by provider latency         |
+| RAG retrieval (hybrid)              | < 200ms    | < 800ms    | Vector search + keyword + rerank      |
+| Workflow trigger (schedule/webhook) | < 100ms    | < 500ms    | Time from trigger to first node start |
+| File upload (10MB)                  | < 2s       | < 5s       | Upload + initial parse                |
 
-### Throughput
+### 1.2 Throughput
 
-| Metric                         | Target               | Notes                                                          |
-| ------------------------------ | -------------------- | -------------------------------------------------------------- |
-| Concurrent streaming sessions  | 20+                  | Bounded by gunicorn workers (4-8) and LLM provider rate limits |
-| Concurrent workflow executions | 10+                  | Mix of in-process and Celery-offloaded                         |
-| Document indexing throughput   | 50 documents/minute  | Celery workers, limited by embedding API rate                  |
-| API requests/second            | 100+ (non-streaming) | Standard Flask/gunicorn on single machine                      |
+| Metric                                | Target               | Mechanism                         |
+| ------------------------------------- | -------------------- | --------------------------------- |
+| Concurrent SSE connections per worker | 1,000+               | gevent green threads              |
+| Concurrent API requests per worker    | 500+                 | gevent cooperative multitasking   |
+| Indexing throughput                   | 100 documents/minute | Celery worker pool (4 workers)    |
+| Workflow executions                   | 50 concurrent runs   | Parallel greenlets within workers |
 
-### Resource Budgets
+### 1.3 Streaming Performance
 
-| Resource                 | Limit                        | Rationale                              |
-| ------------------------ | ---------------------------- | -------------------------------------- |
-| API container memory     | 512MB - 1GB                  | Flask + loaded models metadata         |
-| Worker container memory  | 1GB                          | Document processing, embedding batches |
-| Sandbox container memory | 256MB                        | Hard limit per code execution          |
-| Sandbox CPU time         | 30 seconds max               | Timeout enforcement for user code      |
-| PostgreSQL connections   | 20 pool (API) + 10 (workers) | pgBouncer not needed at this scale     |
-| Redis memory             | 256MB                        | Sessions + Celery broker + cache       |
+- Token-by-token streaming with < 10ms added latency per chunk (API overhead, not provider)
+- Backpressure propagates end-to-end: slow client does not buffer unboundedly in the API
+- SSE reconnection support (`Last-Event-ID` header for resuming broken connections)
 
 ---
 
 ## 2. Scalability
 
-### Design Limits (Acceptable for Project Scope)
+### 2.1 Horizontal Scaling
 
-| Dimension                  | Supported Scale   | Bottleneck                                             |
-| -------------------------- | ----------------- | ------------------------------------------------------ |
-| Users                      | 1-10 concurrent   | Single auth session store                              |
-| Apps per user              | 100+              | PostgreSQL, no practical limit                         |
-| Conversations per app      | 10,000+           | PostgreSQL, indexed                                    |
-| Messages per conversation  | 1,000+            | Query with pagination                                  |
-| Documents per dataset      | 500+              | Indexing throughput                                    |
-| Segments per document      | 10,000+           | pgvector with HNSW                                     |
-| Total vectors              | 100,000 - 500,000 | pgvector single-node limit before performance degrades |
-| Workflow nodes per graph   | 50+               | DAG executor, in-memory                                |
-| Workflow runs (historical) | Unlimited         | PostgreSQL, indexed                                    |
+| Component          | Scaling Strategy                                                          |
+| ------------------ | ------------------------------------------------------------------------- |
+| API (gunicorn)     | Add workers (processes) or replicas behind nginx                          |
+| Celery workers     | Add containers with same image (MODE=worker)                              |
+| Frontend (Next.js) | PM2 cluster mode (2+ instances) or container replicas                     |
+| PostgreSQL         | Read replicas for query-heavy workloads (not required at portfolio scale) |
+| Redis              | Single instance sufficient at portfolio scale; Cluster mode documented    |
 
-### Horizontal Scaling Path (Not Implemented, Documented for Architecture Awareness)
+### 2.2 Data Scale Targets
 
-If Kairo needed to scale beyond single-machine:
+| Entity                   | Target Volume | Notes                                     |
+| ------------------------ | ------------- | ----------------------------------------- |
+| Tenants                  | 100+          | Multi-workspace support                   |
+| Documents per dataset    | 10,000        | Indexing pipeline handles batch           |
+| Segments per dataset     | 1,000,000     | pgvector HNSW scales to millions          |
+| Workflow nodes per graph | 200           | Frontend canvas + engine traversal        |
+| Concurrent workflow runs | 50            | Per-tenant, limited by Celery capacity    |
+| Model providers          | 5             | OpenAI, Anthropic, Google, Cohere, Ollama |
+| Vector dimensions        | Up to 3072    | text-embedding-3-large max                |
 
-1. API: stateless, add more gunicorn instances behind a load balancer
-2. Workers: add more Celery workers consuming from the same Redis queue
-3. Database: read replicas for query-heavy paths (conversation history, logs)
-4. Vector store: migrate to Qdrant cluster or pgvector with partitioning
-5. Redis: Redis Cluster for session/cache sharding
+### 2.3 Queue Scaling
+
+- Celery supports priority queues: `priority_rag_pipeline` for user-initiated re-indexing
+- Task routing: indexing tasks to high-memory workers, workflow execution to standard workers
+- Beat is single-process (acceptable at portfolio scale); HA requires distributed lock (deferred)
 
 ---
 
-## 3. Availability
+## 3. Reliability
 
-### Target
+### 3.1 Fault Tolerance
 
-- **99% uptime** for the self-hosted instance (allows ~7 hours downtime/month)
-- No SLA enforcement; this is a portfolio project, not a production service
+| Failure Scenario      | Behavior                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| API process crash     | gunicorn master respawns worker. In-flight requests fail, no data loss.                                 |
+| Celery worker crash   | Task returns to queue (at-least-once). Idempotency keys prevent duplicate execution.                    |
+| Plugin daemon crash   | Plugin invocations fail with `ProviderUnavailableError`. API unaffected. Health check triggers restart. |
+| Sandbox crash         | Code node fails with timeout. Workflow applies error strategy (retry/continue/fail).                    |
+| Redis crash           | Sessions lost (users re-login). Celery broker recovers on restart (pending tasks may be lost).          |
+| PostgreSQL crash      | System unavailable until DB recovers. No split-brain; single writer.                                    |
+| Model provider outage | `ProviderUnavailableError` after retry. Fallback chains (if configured) try alternative provider.       |
 
-### Failure Modes and Recovery
+### 3.2 Data Durability
 
-| Failure                    | Impact                         | Recovery                                                                      |
-| -------------------------- | ------------------------------ | ----------------------------------------------------------------------------- |
-| LLM provider down          | Chat/workflow LLM nodes fail   | Return clear error to user. No retry (provider outage is unbounded).          |
-| Redis down                 | Sessions invalid, Celery stops | API falls back to error state. Workers pause. Restart Redis restores service. |
-| PostgreSQL down            | Full system down               | No graceful degradation. Service unavailable until DB recovers.               |
-| Sandbox container crash    | Code nodes fail                | API returns node execution error. Other node types unaffected.                |
-| Celery worker crash        | Async tasks stall              | Unacknowledged tasks return to queue. New worker picks them up on restart.    |
-| Embedding API rate limited | Indexing slows                 | Celery retries with exponential backoff (max 3 retries).                      |
+- All business state in PostgreSQL (ACID, WAL-based durability)
+- Workflow run state persisted at each node completion (survives worker crash)
+- HITL checkpoints persisted to PostgreSQL (survives full cluster restart)
+- Redis is ephemeral (sessions, rate limit counters, cache). Loss is recoverable, not catastrophic.
+- File uploads stored in S3-compatible storage (not local filesystem)
 
-### Health Checks
+### 3.3 Retry Semantics
 
-```
-GET /health          â†’ 200 if API process is alive
-GET /health/ready    â†’ 200 if PostgreSQL + Redis are reachable
-```
+| Context                         | Strategy                | Max Retries | Backoff             |
+| ------------------------------- | ----------------------- | ----------- | ------------------- |
+| Model invocation (429)          | Exponential with jitter | 3           | 1s, 2s, 4s          |
+| Model invocation (5xx)          | Exponential             | 2           | 2s, 4s              |
+| Celery task (transient failure) | Exponential             | 3           | 10s, 30s, 60s       |
+| Indexing pipeline (per-stage)   | Exponential             | 3           | 5s, 15s, 45s        |
+| Workflow node (configurable)    | Per-node error strategy | 0-5         | Configurable        |
+| Webhook delivery (outbound)     | Exponential             | 5           | 1m, 5m, 15m, 1h, 4h |
 
-Docker Compose health checks ensure dependent services wait for readiness.
+### 3.4 Idempotency
+
+- Workflow node executions keyed by `(workflow_run_id, node_id)`. Duplicate detection on retry.
+- Celery tasks use `task_id` for deduplication. Same task_id = skip if already completed.
+- Webhook triggers check `X-Request-ID` header for duplicate event delivery.
 
 ---
 
 ## 4. Security
 
-### Authentication and Authorization
+### 4.1 Authentication
 
-| Mechanism                                        | Scope                               |
-| ------------------------------------------------ | ----------------------------------- |
-| Session cookie (HTTP-only, Secure, SameSite=Lax) | Web UI access                       |
-| API key (hashed, per-app)                        | External/programmatic access        |
-| CSRF token                                       | State-changing requests from web UI |
+| Surface                   | Method                                                        | Token Lifetime        |
+| ------------------------- | ------------------------------------------------------------- | --------------------- |
+| Console (admin)           | Session cookie (HTTP-only, Secure, SameSite=Lax) + CSRF token | 7 days (configurable) |
+| Service API               | Bearer token (hashed, per-app)                                | No expiry (revocable) |
+| End-user web apps         | Passport token                                                | 24 hours              |
+| Plugin daemon (forward)   | Shared secret (`PLUGIN_DAEMON_KEY`)                           | N/A (static)          |
+| Plugin daemon (backwards) | Shared secret (`INNER_API_KEY_FOR_PLUGIN`)                    | N/A (static)          |
+| Webhooks (inbound)        | HMAC-SHA256 signature                                         | N/A (per-request)     |
+| File access               | Signed URL with expiration                                    | 1 hour                |
 
-### Data Protection
+### 4.2 Authorization
 
-| Data                    | Protection                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| User passwords          | bcrypt (cost factor 12)                                                        |
-| Model provider API keys | AES-256 encryption at rest, decrypted only at call time                        |
-| Session tokens          | Random 256-bit, stored in Redis with TTL                                       |
-| API keys                | SHA-256 hashed in PostgreSQL, plaintext shown once at creation                 |
-| User-uploaded documents | Stored on local filesystem (Docker volume), access controlled by app ownership |
+- **Tenant isolation**: Every resource scoped by `tenant_id`. ORM-layer enforcement.
+- **RBAC**: Owner > Admin > Editor > Viewer. Roles stored in `tenant_account_joins`.
+- **Resource-level**: API keys scoped per-app. Dataset access configurable per-app.
+- **Plugin permissions**: Manifest declares required permissions. Daemon enforces at runtime.
 
-### Input Validation
+### 4.3 Network Security
 
-- All API inputs validated at controller layer (type, length, format)
-- SQL injection: prevented by SQLAlchemy parameterized queries (no raw SQL)
-- XSS: React's default escaping + Content-Security-Policy headers
-- Path traversal: document uploads use UUID filenames, never user-provided paths
-- Sandbox: no host filesystem access, no host network, resource-limited
+| Boundary                         | Protection                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Sandbox > internal network       | Blocked. `sandbox_network` only connects to `ssrf_proxy`.                                  |
+| Plugin daemon > internal network | Blocked except `/inner/api` via explicit Docker network rule.                              |
+| SSRF proxy outbound              | Blocks private IP ranges (10.x, 172.16.x, 192.168.x, 169.254.x). DNS rebinding protection. |
+| API > external                   | Direct (no proxy needed; API is trusted code).                                             |
+| nginx > internet                 | TLS 1.2+ only. HSTS enabled.                                                               |
 
-### Secrets Management
+### 4.4 Secrets Management
 
-- All secrets via environment variables (never hardcoded, never in git)
-- `.env.example` provided with placeholder values
-- Docker Compose reads from `.env` file (gitignored)
+- Model credentials: Fernet-encrypted in PostgreSQL. Decrypted only at invocation time. Never logged.
+- Environment secrets: Docker env files (`docker/envs/security.env`). Not committed to Git.
+- Plugin daemon keys: Environment variables, not in database.
+- `SECRET_KEY` (Flask session signing + Fernet encryption): Generated per-deployment, stored in env.
+
+### 4.5 Input Validation
+
+- All request bodies validated by Pydantic v2 schemas (flask-restx integration)
+- File uploads: type validation, size limits (configurable, default 50MB), virus scanning (optional)
+- Workflow graph: schema validation before save (node types exist, edges connect valid ports)
+- SQL injection: impossible via SQLAlchemy ORM (parameterized queries only)
+- XSS: React escapes by default. Content-Security-Policy header via nginx.
 
 ---
 
-## 5. Reliability
+## 5. Observability
 
-### Data Durability
+### 5.1 Distributed Tracing (OpenTelemetry)
 
-| Data                                         | Durability Guarantee                                                |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| User accounts, apps, conversations, messages | PostgreSQL with WAL. Durable on commit.                             |
-| Workflow definitions                         | PostgreSQL. Versioned (no destructive updates).                     |
-| Workflow run history                         | PostgreSQL. Append-only.                                            |
-| Document embeddings                          | pgvector in PostgreSQL. Same durability as relational data.         |
-| Uploaded documents (raw files)               | Docker volume. Survives container restart, lost on volume deletion. |
-| Session state                                | Redis. Ephemeral. Loss = user re-authenticates.                     |
-| Celery task state                            | Redis. Ephemeral. Unacknowledged tasks survive worker crash.        |
+| Instrumented Component | Span Name Pattern      | Key Attributes                         |
+| ---------------------- | ---------------------- | -------------------------------------- |
+| Flask request          | `HTTP {method} {path}` | status_code, tenant_id, user_id        |
+| Celery task            | `celery.task.{name}`   | task_id, retry_count                   |
+| Model invocation       | `model.invoke`         | provider, model, tokens, latency, cost |
+| Vector search          | `vector.search`        | collection, top_k, results_count       |
+| Redis operation        | `redis.{command}`      | key_prefix, latency                    |
+| SQLAlchemy query       | `db.query`             | table, operation, latency              |
+| Plugin execution       | `plugin.execute`       | plugin_id, type, latency               |
+| Outbound HTTP          | `http.request`         | url, method, status_code               |
 
-### Error Handling Contract
+### 5.2 Metrics (Prometheus-compatible)
 
-All errors return a consistent JSON envelope:
+| Category | Key Metrics                                                                            |
+| -------- | -------------------------------------------------------------------------------------- |
+| API      | request_duration_seconds, requests_total, active_connections                           |
+| LLM      | model_invocations_total, model_tokens_total, model_latency_seconds, model_cost_dollars |
+| RAG      | indexing_duration_seconds, segments_created_total, retrieval_duration_seconds          |
+| Workflow | workflow_runs_total, workflow_duration_seconds, node_executions_total                  |
+| Queue    | celery_tasks_total, celery_task_duration_seconds, celery_queue_depth                   |
+| System   | process_memory_bytes, process_cpu_seconds, greenlets_active                            |
 
-```json
-{
-  "error": {
-    "code": "provider_unavailable",
-    "message": "OpenAI API returned 503. The model provider is temporarily unavailable.",
-    "status": 502
-  }
-}
-```
+### 5.3 Logging
 
-Error categories:
+- Structured JSON logs (not plaintext)
+- Correlated with trace_id and span_id (OTel context propagation)
+- Log levels: DEBUG (dev only), INFO (request lifecycle), WARNING (recoverable errors), ERROR (unhandled exceptions)
+- Sensitive data never logged: credentials, API keys, user PII, model outputs (unless explicitly enabled for debugging)
 
-- `4xx`: client error (bad input, unauthorized, not found)
-- `5xx`: server error (provider failure, internal crash, timeout)
-- Streaming errors: SSE `error` event with same JSON structure, then stream closes
+### 5.4 Error Tracking (Sentry)
 
-### Retry Policy
-
-| Operation          | Retries | Backoff                       | Conditions                          |
-| ------------------ | ------- | ----------------------------- | ----------------------------------- |
-| LLM API call       | 2       | Exponential (1s, 4s)          | 429 (rate limit), 503 (unavailable) |
-| Embedding API call | 3       | Exponential (2s, 8s, 32s)     | 429, 503                            |
-| Celery task        | 3       | Exponential (60s, 300s, 900s) | Any unhandled exception             |
-| Vector store write | 2       | Linear (1s, 2s)               | Connection timeout                  |
-
-No retry on: 400 (bad request), 401 (auth failure), 404 (not found). These are permanent failures.
+- Unhandled exceptions captured with full stack context
+- Performance transactions for slow endpoints (> 2s)
+- Release tracking (commit SHA mapped to deployment)
+- Breadcrumbs: last 100 events before an error (HTTP requests, DB queries, Redis ops)
 
 ---
 
 ## 6. Maintainability
 
-### Code Organization
+### 6.1 Code Quality
 
-```
-kairo/
-  api/
-    controllers/     # HTTP layer (auth, validation, routing)
-    services/        # Business logic orchestration
-    repositories/    # Data access (SQLAlchemy)
-    core/
-      workflow/      # DAG executor, node types
-      model_runtime/ # Provider abstraction
-      rag/           # Chunking, embedding, retrieval
-      tools/         # Tool registry, execution
-    models/          # ORM definitions
-    tasks/           # Celery task definitions
-    tests/
-      unit/          # Mocked dependencies
-      integration/   # Real DB, real Redis
-  web/
-    app/             # Next.js app router
-    components/      # React components
-    lib/             # Client utilities, API client
-  docker/
-    docker-compose.yml
-    Dockerfile.api
-    Dockerfile.web
-    Dockerfile.sandbox
-  docs/
-    adr/             # Architecture Decision Records
-    design-doc.md
-    nfr.md
-```
+| Tool                 | Scope                         | Enforcement                |
+| -------------------- | ----------------------------- | -------------------------- |
+| Ruff                 | Python lint + format          | CI blocks merge on failure |
+| mypy                 | Python type checking (strict) | CI blocks merge on failure |
+| ESLint + Prettier    | TypeScript lint + format      | CI blocks merge on failure |
+| Conventional commits | Git history                   | Commit-msg hook + CI check |
 
-### Coding Standards
+### 6.2 Architecture Boundaries
 
-| Aspect            | Standard                                  |
-| ----------------- | ----------------------------------------- |
-| Python formatting | Black (line length 120)                   |
-| Python linting    | Ruff                                      |
-| Python typing     | Strict (mypy, all public functions typed) |
-| TypeScript        | Strict mode, ESLint + Prettier            |
-| Commit messages   | Conventional Commits                      |
-| Branch strategy   | main + feature branches, squash merge     |
-| PR requirements   | CI passes, self-review checklist          |
+- **controllers/**: HTTP layer only. No business logic. No DB queries.
+- **services/**: Orchestration. Calls repositories. No SQLAlchemy imports.
+- **core/**: Domain logic. No Flask imports. Portable.
+- **repositories/**: Data access. Protocol-based interfaces. No service logic.
+- **models/**: ORM definitions only. No query logic.
 
-### Documentation Requirements
+Violations caught by import-linter rules (enforced in CI).
 
-- Every core engine module has a README explaining its purpose and key interfaces
-- Public API endpoints documented with request/response examples
-- ADRs for every architectural decision
-- README.md with setup instructions, architecture overview, demo screenshots
+### 6.3 Testing
+
+| Layer         | Framework                | Target Coverage                                          |
+| ------------- | ------------------------ | -------------------------------------------------------- |
+| Unit          | pytest                   | 80%+ for core/ domain logic                              |
+| Integration   | pytest + testcontainers  | All repository methods, all Celery tasks                 |
+| E2E           | pytest + httpx           | Critical paths (auth, workflow execution, RAG retrieval) |
+| Frontend unit | Vitest + Testing Library | Component logic, hooks, store behavior                   |
+| Frontend E2E  | Playwright               | Critical user flows (login, create app, run workflow)    |
+
+### 6.4 Documentation
+
+- ADRs for all architectural decisions (immutable once accepted)
+- RFCs for complex subsystems (workflow, model runtime, RAG)
+- API documentation auto-generated via flask-restx (Swagger UI at `/console/api/docs`)
+- README per workspace package (provider setup, environment requirements)
 
 ---
 
-## 7. Observability
+## 7. Deployability
 
-### Logging
+### 7.1 Container Requirements
 
-| Level   | Use                                                                  |
-| ------- | -------------------------------------------------------------------- |
-| ERROR   | Unhandled exceptions, provider failures, data corruption             |
-| WARNING | Retries, rate limits, deprecated usage                               |
-| INFO    | Request start/end, task start/end, key state transitions             |
-| DEBUG   | SQL queries, provider request/response bodies (redacted credentials) |
+| Service       | Min Memory | Min CPU   | Health Check                      |
+| ------------- | ---------- | --------- | --------------------------------- |
+| api           | 512MB      | 0.5 core  | `GET /health` returns 200         |
+| worker        | 1GB        | 1 core    | Celery inspect ping               |
+| worker_beat   | 256MB      | 0.25 core | Process alive check               |
+| web           | 256MB      | 0.5 core  | `GET /` returns 200               |
+| plugin_daemon | 256MB      | 0.5 core  | `GET /health` returns 200         |
+| sandbox       | 512MB      | 0.5 core  | Process alive check               |
+| ssrf_proxy    | 128MB      | 0.25 core | Port 3128 accepting connections   |
+| nginx         | 128MB      | 0.25 core | Port 80/443 accepting connections |
+| db            | 1GB        | 1 core    | `pg_isready`                      |
+| redis         | 256MB      | 0.25 core | `redis-cli ping`                  |
 
-Format: structured JSON (timestamp, level, request_id, service, message, context).
+**Total minimum: ~5GB RAM, 5 CPU cores** for full 10-service deployment.
 
-### Tracing
+### 7.2 Startup Order
+```
 
-- Request ID generated at API entry, propagated to all services (workers, sandbox)
-- Workflow execution: per-node trace (node_id, started_at, finished_at, status, error)
-- Stored in workflow_node_executions table for post-hoc debugging
+1. db, redis (no dependencies)
+2. api, worker, worker_beat (depend on db + redis)
+3. plugin_daemon (depends on db)
+4. sandbox, ssrf_proxy (no app dependencies)
+5. web (depends on api)
+6. nginx (depends on api + web)
 
-### Metrics (Stretch Goal)
+```
 
-If implemented:
+Docker Compose `depends_on` with health checks enforces this order.
 
-- Request count by endpoint and status code
-- Request latency (p50, p95, p99)
-- LLM token usage by provider and model
-- Active streaming sessions count
-- Celery queue depth and task completion rate
-- Embedding indexing throughput
+### 7.3 Zero-Downtime Updates
+
+- API: rolling restart via gunicorn's `SIGUSR2` (new master, old workers drain, then stop)
+- Workers: `SIGTERM` triggers warm shutdown (finish current task, reject new ones)
+- Database migrations: run before new code deploys. Migrations must be backwards-compatible (no column drops until old code is fully drained).
+- Frontend: immutable builds. New container starts, nginx routes to it, old container stops.
+
+### 7.4 Backup and Recovery
+
+- PostgreSQL: daily `pg_dump` to S3-compatible storage. Point-in-time recovery via WAL archiving.
+- Redis: RDB snapshots (hourly). AOF persistence optional (not required; Redis is ephemeral cache layer).
+- File uploads: stored in S3-compatible object storage (inherent durability).
+- Recovery target: < 1 hour to full service restoration from backups.
 
 ---
 
 ## 8. Compatibility
 
-### Browser Support
+### 8.1 Browser Support
 
-- Chrome 90+, Firefox 90+, Safari 15+, Edge 90+
-- No IE support
-- EventSource API required (all modern browsers)
+| Browser | Minimum Version | Notes |
+|---------|----------------|-------|
+| Chrome | 90+ | Primary development target |
+| Firefox | 90+ | Full support |
+| Safari | 15+ | SSE supported from Safari 7 |
+| Edge | 90+ | Chromium-based |
 
-### API Versioning
+### 8.2 API Versioning
 
-- No versioning for initial release (v1 implicit)
-- If breaking changes needed later: URL prefix (`/v2/`) with deprecation notice on v1
-- All responses include `Content-Type: application/json` (non-streaming) or `text/event-stream` (streaming)
+- Service API versioned via URL prefix (`/v1/`)
+- Breaking changes require new version (`/v2/`). Old version supported for 6 months minimum.
+- Console API (`/console/api/`) is internal; versioned implicitly by frontend build.
 
-### Python Compatibility
+### 8.3 Python/Node Requirements
 
-- Python 3.11+ (required for modern typing features, performance improvements)
-- No Python 2 support
+| Runtime | Minimum | Recommended |
+|---------|---------|-------------|
+| Python | 3.12 | 3.12 |
+| Node.js | 20 LTS | 22 LTS |
+| Docker | 24+ | 26+ |
+| Docker Compose | v2.20+ | Latest |
 
-### Docker Compatibility
+---
 
-- Docker Engine 24+
-- Docker Compose V2 (compose.yml format)
+## 9. Accessibility
+
+### 9.1 Standards
+
+- WCAG 2.1 AA compliance for all interactive UI
+- Keyboard navigation for all actions (workflow canvas included)
+- Screen reader support via ARIA labels and semantic HTML
+- Focus management: visible focus rings (`:focus-visible`), logical tab order
+- Color contrast: minimum 4.5:1 for body text, 3:1 for large text
+
+### 9.2 Workflow Canvas Accessibility
+
+- Keyboard shortcuts for node creation, connection, deletion
+- Screen reader announces node type, connections, and execution state
+- High-contrast mode for node state visualization
+- Zoom controls accessible via keyboard (not just gesture)
+
+---
+
+## 10. Internationalization
+
+### 10.1 Frontend
+
+- All user-facing strings externalized via next-intl
+- RTL layout support via CSS logical properties
+- Date/time formatting respects user locale
+- Number formatting (thousand separators, decimal points) locale-aware
+
+### 10.2 Backend
+
+- API error messages include `code` (machine-readable) and `message` (human-readable, English default)
+- Timezone handling: all timestamps stored as UTC. Display timezone configurable per-user.
+- Unicode support throughout (UTF-8 in DB, API, and file processing)
+
+---
+
+## 11. Compliance and Audit
+
+### 11.1 Audit Trail
+
+- All authentication events logged (login, logout, failed attempts, token creation/revocation)
+- All data mutations logged (create, update, delete with actor + timestamp)
+- Content moderation decisions logged (input, decision, reason)
+- Plugin executions logged (what ran, what it accessed via backwards invocation)
+
+### 11.2 Data Retention
+
+- Workflow run records: retained indefinitely (analytics + debugging)
+- Conversation messages: retained until user deletes conversation
+- Deleted datasets: segments and vectors hard-deleted (no soft-delete for user data)
+- Audit logs: retained 90 days minimum
+
+### 11.3 GDPR Considerations
+
+- User account deletion: cascading delete of all user-created content (Celery task, eventual consistency)
+- Data export: API endpoint for downloading user's data (conversations, apps, datasets)
+- Consent: no tracking beyond functional requirements. No third-party analytics in self-hosted.
+```
