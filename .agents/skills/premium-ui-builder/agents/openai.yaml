@@ -1,0 +1,4 @@
+interface:
+  display_name: "Premium UI Builder"
+  short_description: "Build calm, expensive-looking interfaces"
+  default_prompt: "Use $premium-ui-builder to design and implement a polished product interface."
