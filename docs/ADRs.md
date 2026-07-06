@@ -16,13 +16,13 @@ Options considered:
 *   Astro + React islands
 *   SvelteKit
 ### Decision
-Next.js 15 with App Router.
+Next.js 16 with App Router.
 ### Rationale
 1. **React Server Components** render MDX content on the server with zero client JS for reading-heavy pages. Only interactive elements (term slide-overs, progress buttons) hydrate.
 2. **Streaming** allows the novel to render immediately while lexicon data prefetches in parallel.
-3. **Vercel-native** deployment means zero DevOps overhead: preview deploys, edge middleware, analytics, cron jobs.
+3. **Vercel-native** deployment means zero DevOps overhead: preview deploys, `proxy.ts` request interception, analytics, cron jobs.
 4. **Ecosystem depth**: Auth.js, Drizzle, Inngest, Paddle SDKs all have first-class Next.js support.
-5. **Dub (23k stars, 100M+ clicks/month)** validates this stack at scale for a content-interaction hybrid app built by a small team.
+5. **Dub's public repository** validates the operating model: Next.js on Vercel, typed product domains, route-handler wrappers, workspace packages, and small-team production discipline.
 
 Astro was close (better static perf) but lacks the dynamic capabilities needed for auth-gated content and real-time progress tracking without significant complexity.
 ### Consequences
@@ -150,16 +150,16 @@ Auth.js v5 with database sessions (Drizzle adapter).
 1. **Magic link + OAuth (GitHub, Google)** — developers prefer passwordless or OAuth. Magic link as primary, GitHub as secondary (our audience lives on GitHub).
 2. **Database sessions** — stored in Turso, queryable, revocable. No JWT token size issues.
 3. **Drizzle adapter** — first-class integration with our ORM choice.
-4. **Edge middleware** — session validation at the edge for gated content routes.
+4. **`proxy.ts` request protection** - coarse route protection happens before rendering; business authorization remains in server/domain code.
 5. **Free** — no per-user pricing (Clerk charges $0.02/MAU after free tier).
-6. **Dub uses NextAuth** — validates the pattern at scale.
+6. **Dub uses the same authentication family** - validates Auth.js/NextAuth as a practical foundation, while Keelacademy uses Auth.js v5 and Drizzle.
 
 Clerk has better DX for complex auth (MFA, org management) but costs money and adds a service dependency for features we don't need. Lucia was considered but is being deprecated in favor of Auth.js patterns.
 ### Consequences
 *   Must implement email provider (Resend) for magic links
 *   Session management is our responsibility (cleanup cron via Inngest)
 *   No built-in user management UI (build a minimal settings page)
-*   Edge middleware adds latency for session check (~10ms, acceptable)
+*   `proxy.ts` checks add latency for protected routes; keep them coarse and avoid putting business logic there.
 
 * * *
 ## ADR-006: CLI-Based Test Submission with HMAC Verification
@@ -238,13 +238,84 @@ Options considered:
 Vercel Pro plan.
 ### Rationale
 1. **Zero-config Next.js deployment** — git push deploys. Preview URLs per PR. Instant rollbacks.
-2. **Edge middleware** — auth checks and geo-routing at the edge without cold starts.
+2. **`proxy.ts`** - auth redirects and lightweight request interception before rendering.
 3. **ISR (Incremental Static Regeneration)** — content pages regenerate without full redeploys.
 4. **Integrated analytics** — Web Vitals, speed insights without third-party scripts.
 5. **Cron jobs** — simple scheduled tasks for cache warming.
 6. **Dub runs on Vercel** — validates handling 100M+ requests/month on this infrastructure.
 7. **$20/month Pro plan** — predictable cost, includes 1TB bandwidth, 1M function invocations.
 ### Consequences
-*   Vendor lock-in (edge middleware, image optimization, ISR are Vercel-specific)
+*   Vendor lock-in (`proxy.ts`, image optimization, ISR, and Vercel deployment features are Vercel-specific)
 *   Function timeout limits (60s on Pro, sufficient for our use cases)
 *   Egress costs at scale (monitor bandwidth usage)
+
+* * *
+## ADR-009: pnpm Workspace for Product Surfaces
+**Status:** Accepted
+**Date:** 2026-07-06
+### Context
+Keelacademy is more than a web app. It has a student-facing web application, shared UI, email templates, a content compiler, a CLI, and a chapter test suite. Dub's repository demonstrates the operational advantage of keeping these surfaces in one workspace while giving each surface an explicit package boundary.
+
+Options considered:
+*   Single Next.js app with all code under `src/`
+*   Multiple repositories
+*   pnpm workspace with `apps/` and `packages/`
+### Decision
+Use a pnpm workspace from the first implementation.
+
+Initial shape:
+*   `apps/web` - Next.js application
+*   `packages/ui` - shared UI primitives and shadcn extensions
+*   `packages/email` - React Email templates and Resend helpers
+*   `packages/content` - Velite schemas, MDX components, and validation
+*   `packages/test-suite` - chapter tests students run locally
+*   `packages/cli` - `keel` CLI for auth, test, submit, and status
+*   `packages/config` - shared TypeScript, ESLint, Tailwind, and formatting config
+
+### Rationale
+1. **Clear ownership** - the CLI and test suite are product surfaces, not implementation details of the web app.
+2. **Publishability** - `@keelacademy/cli` and `@keelacademy/test-suite` can be versioned and published without extracting them later.
+3. **Shared contracts** - submission payload schemas, chapter identifiers, and content metadata can be reused without copy-paste.
+4. **Build hygiene** - package boundaries prevent the web app from becoming a general-purpose utility bin.
+5. **Dub precedent** - Dub keeps UI, email, CLI, analytics, embeds, and utilities in packages while the web app owns product routes.
+
+### Consequences
+*   Slightly more setup than a single app.
+*   Package dependency direction must be enforced: packages cannot import from `apps/web`.
+*   Shared code must earn its place in a package; avoid premature abstraction.
+
+* * *
+## ADR-010: Schema-First Route Handlers and Domain Services
+**Status:** Accepted
+**Date:** 2026-07-06
+### Context
+Keelacademy will have route handlers for Paddle webhooks, CLI submissions, signed references, API keys, and future public APIs. These endpoints touch money, entitlement, and student progress, so ad hoc route logic would become fragile quickly.
+
+Dub's API handlers show a production pattern worth adopting: route handlers remain thin, shared wrappers own auth/rate-limit/error behavior, schemas define request and response contracts, and domain services own business rules.
+
+Options considered:
+*   Put all logic directly in `route.ts`
+*   Use tRPC for all server calls
+*   Use schema-first route handlers plus domain services
+### Decision
+Use schema-first route handlers plus domain services.
+
+Every external route handler must:
+1. Use a shared wrapper for session/API-key auth, entitlement checks, rate limiting, and stable errors.
+2. Validate params, query, and body with a schema.
+3. Call a domain service under `apps/web/src/lib/<domain>/`.
+4. Return a typed response.
+5. Record audit or API logs for mutations.
+6. Emit background work through Inngest rather than hiding long side effects in the request.
+
+### Rationale
+1. **Security** - auth and entitlement checks are centralized.
+2. **Testability** - business rules are tested as domain services without spinning up HTTP.
+3. **DX** - schemas become the source of truth for CLI payloads and future API docs.
+4. **Operational clarity** - stable error codes and mutation logs make support possible for a solo founder.
+5. **Dub precedent** - this is the difference between route files that scale and route files that become a maze.
+
+### Consequences
+*   More upfront structure for the first endpoints.
+*   Need discipline to keep wrappers small and domain services cohesive.
+*   Public contracts become harder to change casually, which is good once the CLI ships.

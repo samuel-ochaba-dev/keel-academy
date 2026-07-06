@@ -25,13 +25,19 @@ An online school for software engineers. Novel-driven curriculum, 16 chapters, 4
 
 ## Architecture
 
-- `src/app/` — Next.js App Router pages and API routes
-- `src/components/ui/` — shadcn components (never modify directly, extend via variants)
-- `src/components/` — app-specific components
-- `src/lib/` — utilities, db client, auth config
-- `src/styles/` — globals.css (tokens), typography.css
-- `content/` — MDX chapters, lexicon, DSA entries
-- `drizzle/` — schema and migrations
+- `apps/web/src/app/` - Next.js App Router pages and route handlers
+- `apps/web/src/components/ui/` - shadcn components (never modify directly, extend via variants)
+- `apps/web/src/components/` - app-specific components
+- `apps/web/src/lib/` - domain services, db client, auth, API helpers
+- `apps/web/src/styles/` - globals.css (tokens), typography.css
+- `apps/web/content/` - MDX chapters, lexicon, DSA entries
+- `apps/web/drizzle/` - schema and migrations
+- `packages/ui/` - shared UI extensions
+- `packages/email/` - transactional email templates
+- `packages/content/` - content schemas and validation helpers
+- `packages/test-suite/` - chapter test suites
+- `packages/cli/` - student CLI
+- `packages/config/` - shared TypeScript, lint, Tailwind, and formatting config
 
 ## Conventions
 
@@ -41,7 +47,8 @@ An online school for software engineers. Novel-driven curriculum, 16 chapters, 4
 - Content layers differentiated via data-layer attribute, not separate color systems.
 - 2-space indent. No semicolons in TS. Single quotes.
 - Prefer server components. Mark 'use client' only when necessary.
-- API routes in src/app/api/. Use Inngest for anything async.
+- External APIs and webhooks live in `apps/web/src/app/api/` route handlers. Use Inngest for anything async.
+- Use `proxy.ts` for coarse request protection in Next.js 16; keep business authorization in server/domain code.
 - Never use `any`. Strict TypeScript everywhere.
 - Commit messages: conventional commits (feat:, fix:, chore:, docs:).
 
@@ -57,4 +64,3 @@ An online school for software engineers. Novel-driven curriculum, 16 chapters, 4
 - Use HSL for colors (OKLCH only)
 - Create barrel files (index.ts re-exports)
 - Use default exports (named exports only)
-- Run install, dev, test, commands. tell me to run it and give you response.

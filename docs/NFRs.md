@@ -9,9 +9,9 @@ Performance, scalability, availability, security, accessibility, observability, 
 | Metric | Target | Rationale |
 | ---| ---| --- |
 | Largest Contentful Paint (LCP) | < 1.5s | Novel pages are the primary experience; readers bounce on slow loads. Google Core Web Vitals "good" threshold is 2.5s; we target excellence. |
-| First Input Delay (FID) | < 50ms | Term click → slide-over must feel instant. |
+| Interaction to Next Paint (INP) | < 100ms | Term click to slide-over must feel instant. |
 | Cumulative Layout Shift (CLS) | < 0.05 | No content jumping while reading. |
-| Time to First Byte (TTFB) | < 200ms | ISR + edge caching enables this for content pages. |
+| Time to First Byte (TTFB) | < 200ms | Static prerendering, cached server reads, and Turso replicas enable this for content pages. |
 | API route response (p95) | < 500ms | Test submissions, progress updates, auth checks. |
 | Slide-over panel open | < 100ms | Lexicon/DSA entries prefetched, render is purely client-side. |
 
@@ -24,7 +24,7 @@ Source: Google Web Vitals documentation (2025), HTTP Archive EdTech vertical rep
 
 | Dimension | Target | Strategy |
 | ---| ---| --- |
-| Concurrent readers | 10,000 | ISR serves from CDN cache; no origin hit for content pages |
+| Concurrent readers | 10,000 | Static/cached content serves from Vercel CDN; personalized progress reads stay indexed and lightweight |
 | Concurrent test submissions | 500/min | Inngest queues buffer writes; DB handles sustained 500 inserts/min easily |
 | Total enrolled students | 100,000 | Turso scales to millions of rows; queries indexed on user\_id + chapter\_number. Edge replicas handle read load globally. |
 | Content corpus | 200+ MDX files | Build time stays under 120s with incremental builds |
@@ -54,14 +54,15 @@ Source: Vercel SLA (99.99% for Enterprise, 99.9% implied for Pro), Turso backup 
 | Requirement | Implementation |
 | ---| --- |
 | Authentication | Auth.js with CSRF tokens, httpOnly secure cookies, session rotation |
-| Authorization | Role-based (student, admin); content gating via middleware |
+| Authorization | Entitlement-based access checks in server/domain code; `proxy.ts` only for coarse route protection |
 | Data at rest | Turso encrypts all data at rest (AES-256) |
 | Data in transit | TLS 1.3 enforced on all endpoints |
 | Payment data | Zero PCI scope (Paddle handles all card data) |
-| API security | Rate limiting (Upstash, 100 req/min per user), HMAC-verified webhooks |
+| API security | Upstash rate limits, HMAC-signed CLI submissions, verified Paddle webhooks, idempotency keys |
 | Secrets management | Vercel environment variables (encrypted, per-environment) |
 | Dependency security | Dependabot + `pnpm audit` in CI |
-| Content protection | Reference implementations behind auth + signed URLs (time-limited) |
+| Content protection | Reference implementations behind entitlement checks + signed URLs (time-limited) |
+| API keys | Raw keys shown once, stored only as hashes, revocable from dashboard |
 
 **Compliance:** No SOC2 or GDPR certification required at launch (education platform, not enterprise SaaS). GDPR data subject requests handled manually until scale requires automation.
 
@@ -88,13 +89,15 @@ Source: WCAG 2.1 specification, Radix UI accessibility documentation.
 
 | Dimension | Tool | What We Track |
 | ---| ---| --- |
-| Errors | Sentry | Unhandled exceptions, API failures, client errors |
+| Errors | Sentry | Unhandled exceptions, API failures, client errors, release context |
 | Performance | Vercel Analytics | Core Web Vitals, route-level performance |
-| Business metrics | Plausible | Chapter completion rates, time-on-page, conversion funnel |
+| Learning events | Structured app events | Chapter viewed, term opened, build started, tests passed, reference viewed |
+| API mutation logs | Database audit/API log tables | Actor, route pattern, status, duration, masked request/response |
+| Webhooks | Database webhook event table | Provider event id, status, retry count, processing error |
 | Background jobs | Inngest Dashboard | Event processing, function failures, retry rates |
 | Uptime | Vercel (built-in) | Endpoint health, response times |
 
-**Alerts:** Sentry alerts on new error types, Inngest alerts on repeated function failures. No PagerDuty (solo developer, async alerts via email/Slack are sufficient).
+**Alerts:** Sentry alerts on new error types, Inngest alerts on repeated function failures, Paddle webhook failure alerts, and reference-access failure alerts. No PagerDuty at launch; async alerts via email/Slack are sufficient.
 
 * * *
 ## NFR-007: Developer Experience (Maintainability)
@@ -107,7 +110,9 @@ Source: WCAG 2.1 specification, Radix UI accessibility documentation.
 | Preview deploys | Every PR gets a unique URL with isolated Turso database |
 | Code coverage | \> 80% on business logic (auth, progress, payments) |
 | Type coverage | 100% strict TypeScript, no `any` |
+| Content validation | Build fails on broken term links, duplicate slugs, missing metadata, or missing chapter test-suite references |
+| Public contract validation | CLI submission payload schemas covered by tests before CLI release |
 
 **Rationale:** Solo developer means DX IS velocity. Every minute of friction compounds. No context-switching between tools.
 
-Source: Dub's development workflow documentation, Vercel build performance benchmarks.
+Source: Dub repository architecture review, Vercel build performance benchmarks.
