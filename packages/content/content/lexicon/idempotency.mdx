@@ -1,0 +1,21 @@
+---
+title: Idempotency
+slug: idempotency
+summary: Repeating the same action should converge on the same result instead of corrupting state.
+---
+
+# Idempotency
+
+Idempotency means an operation can be repeated without creating a different final state.
+
+In product code, that matters anywhere retries can happen:
+
+- sign-in callbacks,
+- payment webhooks,
+- background jobs,
+- progress writes,
+- and cache revalidation.
+
+For M0, the chapter progress write is the obvious example. Revisiting the same chapter should update the existing progress row, not create a new row every time the page loads.
+
+A good early question is: **if this runs twice, does the system stay sane?**

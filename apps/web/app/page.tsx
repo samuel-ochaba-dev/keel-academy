@@ -1,102 +1,92 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+import Link from "next/link";
+import { siteConfig } from "@repo/config/site";
+import { listChapters } from "@repo/content";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+export default async function Home() {
+  const chapters = await listChapters();
+  const firstChapter = chapters[0];
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
-
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-16 px-6 py-10 md:px-10">
+      <section className="grid gap-8 rounded-3xl border border-border bg-card/70 p-8 shadow-sm md:grid-cols-[1.4fr_0.9fr] md:p-12">
+        <div className="space-y-6">
+          <Badge variant="secondary" className="w-fit">
+            M0 walking skeleton
+          </Badge>
+          <div className="space-y-4">
+            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">
+              {siteConfig.name}
+            </h1>
+            <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
+              {siteConfig.description}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {firstChapter ? (
+              <Button asChild size="lg">
+                <Link href={`/chapters/${firstChapter.slug}`}>
+                  Read the first chapter
+                </Link>
+              </Button>
+            ) : null}
+            <Button asChild size="lg" variant="outline">
+              <Link href="/dashboard">Open dashboard</Link>
+            </Button>
+          </div>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
-    </div>
+
+        <Card className="border-border/70 bg-background/70">
+          <CardHeader>
+            <CardTitle>What ships in M0</CardTitle>
+            <CardDescription>
+              One end-to-end path. No fake architecture.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>• Auth.js sign-in flow</p>
+            <p>• MDX chapter rendering</p>
+            <p>• Lexicon + DSA support content</p>
+            <p>• Drizzle + libSQL progress persistence</p>
+            <p>• Protected dashboard shell</p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Read</CardTitle>
+            <CardDescription>
+              Novel-style chapter flow, optimized for focus.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Look up</CardTitle>
+            <CardDescription>
+              Lexicon and DSA references stay close to the chapter.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Build</CardTitle>
+            <CardDescription>
+              Every chapter ends in implementation, not vibes.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </section>
+    </main>
   );
 }
