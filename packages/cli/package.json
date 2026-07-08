@@ -1,9 +1,10 @@
 {
-  "name": "@repo/cli",
+  "name": "@keelacademy/cli",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "UNLICENSED",
   "bin": {
-    "keel-academy": "./bin/keel-academy.mjs"
+    "keel": "./bin/keel.mjs"
   }
 }

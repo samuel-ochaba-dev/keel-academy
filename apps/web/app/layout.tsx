@@ -1,37 +1,33 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-});
+import type { Metadata } from 'next'
+import './globals.css'
+import { fontVariables } from '@/lib/fonts'
+import { ThemeProvider } from '@/components/theme-provider'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
-  title: "Keel Academy",
+  title: {
+    default: 'Keelacademy',
+    template: '%s · Keelacademy',
+  },
   description:
-    "A reading-first engineering school for developers growing into production-grade engineers.",
-};
+    "An online school for software engineers who can make things work but can't make things hold.",
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn(geistSans.variable, geistMono.variable, "font-sans", geist.variable)}>
-      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        {children}
+    <html lang="en" suppressHydrationWarning className={cn(fontVariables)}>
+      <body className="min-h-screen bg-background font-sans text-foreground">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

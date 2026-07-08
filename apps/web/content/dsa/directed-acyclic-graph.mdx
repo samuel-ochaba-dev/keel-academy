@@ -1,0 +1,19 @@
+---
+title: Directed Acyclic Graph (DAG)
+slug: directed-acyclic-graph
+summary: Nodes connected by one-way arrows, with no way to loop back to where you started — the shape that dependencies naturally form.
+---
+
+You met this in Chapter 1, when Marcus drew boxes for Redis, the queue, and tracing and connected them with arrows that meant *this one needs that one first.*
+
+A **directed acyclic graph** is three plain ideas stacked together. It's a *graph* — dots (nodes) joined by connections. It's *directed* — each connection is a one-way arrow, so "A points to B" is different from "B points to A." And it's *acyclic* — no matter which arrows you follow, you can never come back to where you started.
+
+That last property is the whole magic. If an arrow from A to B means "A must come before B," then a cycle would be a contradiction: A before B before C before A. Forbidding cycles is exactly what guarantees a sane order exists. A good mental picture: a river system. Water flows downhill, tributaries join, nothing ever flows back uphill to its own source.
+
+In Kairo this shape is everywhere. The order your 28 extensions initialize in is a DAG. Later, the visual workflow engine *is* a DAG — nodes are steps, edges are "feed your output into the next step," and the engine walks it.
+
+In memory you usually store it as an **adjacency list**: for each node, the list of nodes its arrows point to. Visiting every node and edge once is `O(V + E)` — vertices plus edges.
+
+The thing people get wrong: a DAG is *not* a tree. A node can have several arrows pointing into it (many things can depend on Redis), and the graph doesn't have to be one connected piece.
+
+**How interviewers frame it:** "detect whether this build configuration has a circular dependency," "can these course prerequisites be satisfied," "is this schedule of tasks even possible." Every one of those is asking: is this directed graph acyclic?

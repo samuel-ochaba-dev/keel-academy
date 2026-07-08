@@ -1,11 +1,13 @@
-import { defineConfig } from "drizzle-kit";
+import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
-  out: "./drizzle",
-  schema: "./lib/schema.ts",
-  dialect: "sqlite",
+  out: './drizzle',
+  schema: './lib/db/schema.ts',
+  // `generate` emits SQLite SQL without a DB connection; migrations are applied
+  // by scripts/migrate.mjs through the libSQL client (works for local `file:`
+  // and remote Turso alike).
+  dialect: 'sqlite',
   dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL ?? "file:local.db",
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: process.env.TURSO_DATABASE_URL ?? 'file:local.db',
   },
-});
+})

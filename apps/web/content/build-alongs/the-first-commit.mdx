@@ -1,0 +1,117 @@
+---
+title: The First Commit — Build-Along
+slug: the-first-commit
+---
+
+Ada built a shape the next person could extend. Now you build it. Not the chat service — the foundation the chat service will stand on: a monorepo, an <Term slug="application-factory">application factory</Term>, and one endpoint that proves the app can boot.
+
+## The spec
+
+Build the smallest thing that is honestly Kairo's beginning.
+
+- **Structure:** one repository with room for many services (`api/` today, `sandbox/`, `web/` later).
+- **Factory:** a `create_app()` function that assembles the app on purpose and returns it — nothing runs on import.
+- **Behavior:** `GET /health` returns `200` with a JSON body `{"status": "healthy"}`.
+- **History:** one conventional commit that tells the truth about what you did.
+
+## What "done" looks like
+
+- `python -m api.wsgi` boots without error.
+- `curl localhost:8000/health` returns `{"status": "healthy"}`.
+- `git log` shows one commit whose message reads like a changelog entry.
+
+---
+
+### 1. Create the workspace skeleton
+
+The repository has to have room for services that don't exist yet.
+
+```bash
+mkdir kairo && cd kairo
+mkdir -p api
+touch api/__init__.py api/app_factory.py api/wsgi.py
+```
+
+**You should see** this tree:
+
+```text
+kairo/
+└── api/
+    ├── __init__.py
+    ├── app_factory.py
+    └── wsgi.py
+```
+
+### 2. Write the application factory
+
+The factory builds the app deliberately. Import order stops being an accident.
+
+```python
+# api/app_factory.py
+from flask import Flask, jsonify
+
+
+def create_app() -> Flask:
+    app = Flask(__name__)
+
+    @app.get("/health")
+    def health():
+        return jsonify(status="healthy")
+
+    return app
+```
+
+**You should see** a `create_app` that touches nothing global — no database, no network — it just assembles and returns.
+
+### 3. Give it a runnable entrypoint
+
+Nothing should build the app except code that means to.
+
+```python
+# api/wsgi.py
+from api.app_factory import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
+```
+
+**You should see** that `app` is only ever created by calling the factory — never as a side effect of an import.
+
+### 4. Boot it and prove it is alive
+
+```bash
+pip install flask
+python -m api.wsgi
+```
+
+In a second terminal:
+
+```bash
+curl localhost:8000/health
+```
+
+**You should see:**
+
+```json
+{"status": "healthy"}
+```
+
+**If instead you see** `ModuleNotFoundError: No module named 'api'` → you're inside the `api/` folder. Run from the repository root (`cd ..`) so `api` is an importable package.
+
+### 5. Make the first commit
+
+Say what you did and why. The <Term slug="conventional-commits">commit is the artifact</Term> the humans read.
+
+```bash
+git init
+git add .
+git commit -m "chore: scaffold Kairo monorepo and application factory"
+```
+
+**You should see** one entry in `git log` — small, honest, and true. That is the whole point of Chapter 1.
+
+---
+
+> In M0 you verify this yourself. In a later chapter, a test suite defines "done" for you, and passing it unlocks the reference implementation to compare against your own.

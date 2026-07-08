@@ -1,0 +1,103 @@
+---
+title: The First Commit
+slug: the-first-commit
+excerpt: On her first day, Ada wants to prove she is fast. Marcus wants to teach her something slower and more expensive — that the first line of a system is a promise to everyone who has to live in it after her.
+part: Part I · Foundation
+order: 1
+estReadMinutes: 9
+lexicon:
+  - monorepo-vs-polyrepo
+  - application-factory
+  - conventional-commits
+dsa:
+  - directed-acyclic-graph
+  - topological-sort
+---
+
+The repository was empty, and Ada could not stop looking at it.
+
+Not empty the way a blank page is empty, waiting to be filled. Empty the way a plot of land is empty. Someone was going to build here. Someone was going to have to live in whatever she poured the first foundation into, and that someone, for the next two years at least, was going to be her.
+
+She had been at the company for four hours. She had a laptop, a coffee that had gone cold during onboarding, and a one-line brief from her manager that read, in full: *Start Kairo. Talk to Marcus before you push anything.*
+
+Kairo. The platform the whole company was betting on — a system that would take a user's plain-English request, route it through a dozen models, run it through a pipeline of retrieval and moderation and tool calls, and return something useful without falling over when four hundred people asked at once. Ten services, eventually. Right now, zero. Right now, a folder with nothing in it and her cursor blinking inside.
+
+She knew how to start. That was the thing nobody tells you about being junior: you often know exactly how to start, and being wrong is precisely the part you can't see yet. She could have the chat service returning a response in an hour. She could feel the shape of it in her hands — one folder, one entrypoint, wire the model call straight into the request handler, ship it, watch it work. Fast. She wanted, more than she wanted to be careful, to be fast. She wanted Marcus to walk over and find something already running.
+
+So she started typing.
+
+She was maybe twenty lines in when a chair rolled up beside hers, and a man who had clearly not hurried anywhere in a decade looked at her screen with the mild interest of someone reading a menu.
+
+"You're Ada," Marcus said. It was not a question, so she didn't answer it. "What are you making?"
+
+"The chat service. I figured I'd get a request flowing end to end, then—"
+
+"Show me the folder."
+
+She showed him. One directory. `kairo/`. Inside it, the beginnings of a single application, everything in one pile — the model call, the HTTP handler, a config value she'd hardcoded because she'd deal with it later.
+
+Marcus didn't say it was wrong. That was the first thing she'd learn about him: he almost never said a thing was wrong. He asked questions until you said it for him.
+
+"How many services did they tell you Kairo will have?"
+
+"Ten."
+
+"And where do those other nine live, in this?" He nodded at the single folder.
+
+"I'll split them out later. When I need them."
+
+"Later," he repeated, like he was turning the word over to check it for cracks. "Here's what happens later. You need a Go sandbox to run untrusted code. It can't share a language with this. It can't share a deploy. But it needs to speak the same contracts you're writing right now, in this file, from memory. So when *later* comes, you either copy those contracts into a second repository and pray they stay in sync, or you go back and tear this apart to make room. You will do the second one. Everyone does the second one. It just costs more in six months than it costs today."
+
+Ada felt the specific heat of being seen through. "So — separate repos from the start? One per service?"
+
+"Now you've got the opposite problem." He took the mouse, which she would later decide was his only genuinely annoying habit, and he drew nothing, just gestured at the emptiness. "Ten repositories. A change to a shared contract is now ten pull requests that have to land in the right order. Your CI can't see across them. A new engineer clones nine things before they can run one." He let go of the mouse. "The choice you're actually making isn't *fast or careful*. It's <Term slug="monorepo-vs-polyrepo">one repository or many</Term>, and both answers are wrong most of the time. For a system that's really one system pretending to be ten services, you want one repository with hard internal walls."
+
+He said it the way you'd mention the weather. Ada wrote it down anyway, because she had already noticed that the things he said flatly were the things that turned out to matter.
+
+"Okay." She pulled up her twenty lines. "So I keep the folder. I just add more folders."
+
+"You keep the folder. Now look at what's inside it." He leaned in. "You've got your model call happening the moment this file is imported. When does your app decide which database to talk to? When does it decide whether moderation is on? Right now the answer is: whenever Python happens to run this line. That's not a decision. That's an accident with good timing."
+
+She saw it, a little. Not all of it.
+
+"When Kairo starts," Marcus said, "it isn't one thing turning on. It's twenty-eight things turning on — a database pool, a Redis connection, a task queue, a tracing layer, each one needing the ones before it to already be awake. You don't want that scattered across the codebase, firing off whenever a module loads. You want one place that builds the application on purpose. A function you call that assembles the whole thing and hands it back to you, ready." He paused. "An <Term slug="application-factory">application factory</Term>. It's not architecture astronomy. It's just refusing to let *import order* be the thing that decides whether your app works."
+
+"Import order," Ada said slowly, because something had snagged. "How do I even know what order? If the queue needs Redis, and tracing needs the queue—"
+
+For the first time, Marcus smiled, and it was not a nice smile so much as a satisfied one, the smile of a man who has led someone exactly where he meant to.
+
+"There it is. That's the real question, and you found it on your first day, so I'm going to keep you." He picked a pen off her desk — hers, uninvited — and drew on the back of an onboarding form. Boxes. Arrows between them. Redis with an arrow to the queue. The queue with an arrow to tracing. Database standing alone, then an arrow from it to the thing that ran migrations.
+
+"This," he said, "is a <Term slug="directed-acyclic-graph">graph with a direction and no loops</Term>. Every box is a piece of the system. Every arrow means *this one needs that one to already exist.* Redis before the queue. The queue before the worker. No arrows curling back on themselves — because if Redis needed the queue and the queue needed Redis, what would you turn on first?"
+
+"Nothing. It'd deadlock."
+
+"It'd deadlock. So the shape forbids it." He tapped the drawing. "And once you have this shape, the initialization order isn't a thing you *guess*. It's a thing you *compute*. There's an order that respects every arrow — everything comes after the things it depends on. Walking the graph to find that order has a name, and you'll implement it for real in Chapter Two, but you should know the name now, because you just re-derived the reason it exists." He wrote it under the boxes. "<Term slug="topological-sort">Topological sort</Term>. The whole of engineering, some days, is just this: find the order that respects the dependencies, and refuse to start anything before the things it leans on are standing."
+
+Ada looked at the drawing for longer than she needed to. It was, she thought, the first thing anyone at this job had shown her that she was certain she'd still be using in ten years.
+
+"So none of this is the chat service," she said.
+
+"None of this is the chat service."
+
+"I've been here four hours and I have nothing running."
+
+"You have something better than something running," Marcus said, and stood, and rolled the chair back to wherever he'd taken it from. "You have a shape the next person can extend without hating you. Now make the first commit. Small. Honest. Just the repository, the factory that builds an empty app, and the one script that proves it boots."
+
+"That's barely anything."
+
+"It's a promise." He was already walking away. "Write the message like you mean it. Not `stuff`. Not `wip`. Say what you did and why, so that a year from now, when something breaks at 3 a.m., the person reading the history — who is probably you — can trust that the record is true. The <Term slug="conventional-commits">commit is the artifact</Term>, not the thing you do so you're allowed to push. The code is what the machine runs. The commit is what the humans read."
+
+Ada turned back to the empty repository, which was still empty, but no longer looked like a plot of land. It looked like the first line of something she would have to be honest inside of for a long time.
+
+She deleted her twenty fast lines. She did not feel that she had lost them. She made a directory that could hold ten services and pretended, for now, to hold one. She wrote a function whose entire job was to build the app on purpose and hand it back. She wrote a script that started it and asked it one question — *are you alive?* — and the app said yes.
+
+Then she wrote the commit. She thought about it longer than she'd thought about any single line of code that day.
+
+`chore: scaffold Kairo monorepo and application factory`
+
+It was, she was fairly sure, the least impressive thing she had ever shipped. It was also the first thing she had built that she would not have to apologize for later. She pushed it, and the history of Kairo began — not with something clever, but with something true.
+
+Down the row, without looking up, Marcus said, "Good. Now do it again tomorrow, sober about what it costs, and you'll be dangerous in about a year."
+
+She believed him. That was the strange part. She believed him completely, and she had no idea yet how much it was going to cost.

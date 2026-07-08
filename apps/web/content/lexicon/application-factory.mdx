@@ -1,0 +1,15 @@
+---
+title: Application Factory
+slug: application-factory
+summary: A function that builds your application on purpose and hands it back, so nothing important happens as a side effect of importing a file.
+---
+
+An application factory is a function — often called `create_app()` — whose whole job is to assemble your application and return it. Config, database pool, cache, routes: the factory wires them together in a controlled order, then gives you the finished app.
+
+Here's the mechanism it protects you from. Without a factory, resources get created at the top level of a module, which means they spring to life *whenever Python first imports that file*. Import order — something you barely control and never think about — quietly becomes the thing that decides whether your app works. A good mental model: it's the difference between a car built on an assembly line, in sequence, and a car whose parts bolt themselves together in whatever order they happen to arrive at the warehouse.
+
+In Kairo, `create_app()` is where the database pool, Redis, the task queue, and tracing get initialized — deliberately, in dependency order. Because the app is built by a function call and not by an import, your tests can spin up a fresh, isolated app for each test, and your web server and background worker can each build exactly the app they need from the same recipe.
+
+**Use a factory** as soon as startup is more than trivial — especially when you have tests, or more than one entrypoint (a web process, a worker, a CLI). **Skip it** only for a genuine one-file script that will never grow.
+
+The common mistake is creating the app or its global resources at module top-level. It works on day one and then, on the day you write your first real test, you discover you can't build a second clean app — because the first one already happened the instant you imported the module.

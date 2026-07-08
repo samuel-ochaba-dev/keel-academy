@@ -1,0 +1,15 @@
+---
+title: Monorepo vs Polyrepo
+slug: monorepo-vs-polyrepo
+summary: One repository with many services inside, versus many repositories with one service each — and why the choice is really about who has to keep shared contracts in sync.
+---
+
+The simplest way to think about it: a **monorepo** is one apartment building with many units, and a **polyrepo** is a street of separate houses. Both can hold ten families. The difference is what happens when you need to change the plumbing everyone shares.
+
+In a monorepo, all of Kairo's services — the API, the Go sandbox, the web app — live in one repository behind hard internal walls. When you change a shared contract (say, the shape of a submission payload), one commit changes it everywhere, and one CI run checks that nothing downstream broke. The walls keep the services from reaching into each other; the shared roof keeps their agreements honest.
+
+In a polyrepo, each service is its own repository. That gives real isolation — separate history, separate access, separate deploys — but the moment two services share a contract, you're hand-carrying that change across repositories and praying they stay in step.
+
+**Use a monorepo** when your "many services" are really one system: they share contracts, they ship together, one team reasons about all of them. **Reach for polyrepo** when the pieces are genuinely independent products, with separate teams and release cadences that shouldn't be forced to move in lockstep.
+
+The common mistake is choosing polyrepo because it *feels* cleaner — one repo per service, tidy — and then spending your afternoons copying shared types between repositories by hand. Kairo is one system wearing ten service costumes, so it wants one repository with strong internal boundaries, not ten repositories with a shared prayer.

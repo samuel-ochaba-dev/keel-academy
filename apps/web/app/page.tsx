@@ -1,92 +1,125 @@
-import Link from "next/link";
-import { siteConfig } from "@repo/config/site";
-import { listChapters } from "@repo/content";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link'
+import { ArrowRightIcon } from 'lucide-react'
+import { listChapters } from '@/lib/content'
+import { SiteHeader } from '@/components/site-header'
+import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
-export default async function Home() {
-  const chapters = await listChapters();
-  const firstChapter = chapters[0];
+const layers = [
+  {
+    name: 'The Novel',
+    description:
+      'A junior engineer ships Kairo and makes every mistake. A senior corrects them — not gently, but clearly. You watch the failure play out before you write a line.',
+  },
+  {
+    name: 'The Build-Along',
+    description:
+      'A spec and a test suite define "done." No walkthrough. The novel taught the idea; now you implement it until the tests are green.',
+  },
+  {
+    name: 'The Lexicon',
+    description:
+      'Idempotency. Backpressure. Circuit breakers. Every term a working engineer uses, one click away, with the mistake people make with it.',
+  },
+  {
+    name: 'Emerging DSA',
+    description:
+      'The algorithms you actually needed to build the thing — topological sort for the workflow engine, token buckets for rate limits — not abstract puzzles.',
+  },
+]
+
+export default function HomePage() {
+  const firstChapter = listChapters()[0]
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-16 px-6 py-10 md:px-10">
-      <section className="grid gap-8 rounded-3xl border border-border bg-card/70 p-8 shadow-sm md:grid-cols-[1.4fr_0.9fr] md:p-12">
-        <div className="space-y-6">
-          <Badge variant="secondary" className="w-fit">
-            M0 walking skeleton
+    <div className="min-h-screen">
+      <SiteHeader />
+
+      <main className="mx-auto w-full max-w-6xl px-6 pb-24 md:px-10">
+        <section className="mx-auto max-w-3xl pt-20 pb-16 text-center md:pt-28">
+          <Badge variant="outline" className="mb-6">
+            An apprenticeship, not a course
           </Badge>
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">
-              {siteConfig.name}
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              {siteConfig.description}
+          <h1 className="text-balance font-heading text-4xl font-semibold tracking-tight md:text-6xl">
+            You can make things work. Here you learn to make them hold.
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            Keelacademy is a novel-driven school where you build{' '}
+            <span className="text-foreground">Kairo</span> — a ten-service LLM
+            platform — one chapter at a time. Read the story, look up what you
+            don&apos;t know, then build it against a real test suite.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            {firstChapter ? (
+              <Link
+                href={firstChapter.url}
+                className={cn(buttonVariants({ size: 'lg' }))}
+              >
+                Read the first chapter
+                <ArrowRightIcon className="size-4" aria-hidden />
+              </Link>
+            ) : null}
+            <Link
+              href="/dashboard"
+              className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}
+            >
+              Track your progress
+            </Link>
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2">
+          {layers.map((layer) => (
+            <Card key={layer.name}>
+              <CardHeader>
+                <CardTitle className="text-xl">{layer.name}</CardTitle>
+                <CardDescription className="text-[0.95rem] leading-7">
+                  {layer.description}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </section>
+
+        <section className="mt-16 rounded-xl border border-border bg-card p-8 md:p-10">
+          <div className="max-w-2xl">
+            <h2 className="font-heading text-2xl font-semibold tracking-tight">
+              What you leave with
+            </h2>
+            <p className="mt-3 leading-7 text-muted-foreground">
+              Not a certificate. A multi-service system you built from commit
+              one — tested, documented, and deployable — plus the judgment to
+              explain why every boundary is shaped the way it is.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {firstChapter ? (
-              <Button asChild size="lg">
-                <Link href={`/chapters/${firstChapter.slug}`}>
-                  Read the first chapter
-                </Link>
-              </Button>
-            ) : null}
-            <Button asChild size="lg" variant="outline">
-              <Link href="/dashboard">Open dashboard</Link>
-            </Button>
-          </div>
-        </div>
-
-        <Card className="border-border/70 bg-background/70">
-          <CardHeader>
-            <CardTitle>What ships in M0</CardTitle>
-            <CardDescription>
-              One end-to-end path. No fake architecture.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>• Auth.js sign-in flow</p>
-            <p>• MDX chapter rendering</p>
-            <p>• Lexicon + DSA support content</p>
-            <p>• Drizzle + libSQL progress persistence</p>
-            <p>• Protected dashboard shell</p>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Read</CardTitle>
-            <CardDescription>
-              Novel-style chapter flow, optimized for focus.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Look up</CardTitle>
-            <CardDescription>
-              Lexicon and DSA references stay close to the chapter.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Build</CardTitle>
-            <CardDescription>
-              Every chapter ends in implementation, not vibes.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </section>
-    </main>
-  );
+          {firstChapter ? (
+            <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-border pt-8">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">
+                  {firstChapter.part}
+                </p>
+                <p className="font-heading text-lg font-semibold">
+                  Chapter {firstChapter.order}: {firstChapter.title}
+                </p>
+              </div>
+              <Link
+                href={firstChapter.url}
+                className={cn(buttonVariants({ variant: 'secondary' }))}
+              >
+                Start reading
+                <ArrowRightIcon className="size-4" aria-hidden />
+              </Link>
+            </div>
+          ) : null}
+        </section>
+      </main>
+    </div>
+  )
 }

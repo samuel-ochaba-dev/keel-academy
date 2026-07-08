@@ -1,0 +1,17 @@
+---
+title: Topological Sort
+slug: topological-sort
+summary: Given a graph of dependencies, produce an order in which everything comes after the things it depends on — and discover, for free, whether such an order even exists.
+---
+
+You re-derived this in Chapter 1 the moment you asked "but how do I know what order to start things in?" You'll implement it for real in Chapter 2, when Kairo's extensions have to initialize in dependency order.
+
+A **topological sort** takes a [directed acyclic graph](/dsa/directed-acyclic-graph) and lays its nodes out in a line so that every arrow points forward — each node appears _after_ everything it depends on. If Redis must come before the queue, then in the final order Redis is somewhere to the left of the queue. Always.
+
+The cleanest way to see the mechanism is **Kahn's algorithm**. Count, for each node, how many arrows point _into_ it (its in-degree). Any node with in-degree zero depends on nothing, so it's safe to place next. Place it, remove it, and decrement the in-degree of everything it pointed to. Repeat. You're peeling off "ready to go" nodes until none remain. It runs in `O(V + E)` — you touch every node and every edge once.
+
+Here's the part that feels like a gift: if you get stuck — nodes remain but none have in-degree zero — you have found a cycle. Everything left is waiting on something else in the pile, forever. So the same algorithm that orders your dependencies also _detects the impossible ones_.
+
+Two things people misremember. First, the order usually **isn't unique** — if two nodes both depend on nothing, either can go first, and both answers are correct. Second, a topological order exists **only if the graph is acyclic**; a cycle means no valid order, which is precisely how you'd catch two extensions that each wait on the other.
+
+**How interviewers frame it:** "Course Schedule II" (return an order you could take the courses in), "Alien Dictionary," or any "figure out the build/task order from these dependencies" question. When you see dependencies and the word _order_, reach for this.

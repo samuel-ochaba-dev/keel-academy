@@ -1,18 +1,18 @@
-"use server";
+'use server'
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { markChapterAsComplete } from "@/lib/progress";
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
+import { markChapterComplete } from '@/lib/progress/service'
 
-export async function markChapterComplete(slug: string) {
-  const session = await auth();
+export async function completeChapterAction(slug: string) {
+  const session = await auth()
 
   if (!session?.user?.id) {
-    redirect(`/sign-in?next=/chapters/${slug}`);
+    redirect(`/sign-in?next=/chapters/${slug}`)
   }
 
-  await markChapterAsComplete(session.user.id, slug);
-  revalidatePath("/dashboard");
-  revalidatePath(`/chapters/${slug}`);
+  await markChapterComplete(session.user.id, slug)
+  revalidatePath('/dashboard')
+  revalidatePath(`/chapters/${slug}`)
 }

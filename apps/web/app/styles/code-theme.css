@@ -1,0 +1,43 @@
+/*
+ * Code blocks stay dark in both light and dark mode — developers expect their
+ * editor's contrast, and it strongly differentiates the build-along layer.
+ * docs/design-system.md.
+ */
+
+[data-code-block],
+[data-layer='build-along'] pre,
+[data-layer='dsa'] pre {
+  background: oklch(15% 0.01 70);
+  color: oklch(90% 0.01 85);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+[data-code-block] code,
+[data-layer='build-along'] pre code,
+[data-layer='dsa'] pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+[data-code-block] .token-keyword {
+  color: oklch(75% 0.15 280);
+}
+[data-code-block] .token-string {
+  color: oklch(75% 0.12 145);
+}
+[data-code-block] .token-comment {
+  color: oklch(50% 0.01 70);
+}
+[data-code-block] .token-function {
+  color: oklch(75% 0.15 60);
+}
+[data-code-block] .token-number {
+  color: oklch(70% 0.14 25);
+}

@@ -1,24 +1,22 @@
 {
-  "name": "@repo/eslint-config",
+  "name": "@keelacademy/eslint-config",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
   "exports": {
     "./base": "./base.js",
-    "./next-js": "./next.js",
-    "./react-internal": "./react-internal.js"
+    "./next": "./next.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@next/eslint-plugin-next": "^16.2.0",
-    "eslint": "^9.39.1",
-    "eslint-config-prettier": "^10.1.1",
+    "@next/eslint-plugin-next": "^16.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-only-warn": "^1.1.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-turbo": "^2.7.1",
-    "globals": "^16.5.0",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.50.0"
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-turbo": "^2.0.0",
+    "globals": "^15.0.0",
+    "typescript-eslint": "^8.0.0"
   }
 }

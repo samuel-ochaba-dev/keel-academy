@@ -1,11 +1,15 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"],
   "tasks": {
+    "content": {
+      "cache": false
+    },
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", ".velite/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -13,13 +17,13 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^test"],
+      "outputs": ["coverage/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
-    },
-    "test": {
-      "dependsOn": ["^test"],
-      "outputs": []
     }
   }
 }

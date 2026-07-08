@@ -1,9 +1,9 @@
 {
-  "name": "@repo/typescript-config",
+  "name": "@keelacademy/typescript-config",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "UNLICENSED",
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   }
 }

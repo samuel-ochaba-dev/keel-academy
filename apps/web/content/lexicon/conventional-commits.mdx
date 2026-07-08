@@ -1,0 +1,15 @@
+---
+title: Conventional Commits
+slug: conventional-commits
+summary: 'A tiny grammar for commit messages — type(scope): description — that turns your git history into something both machines and tired humans can read.'
+---
+
+Conventional Commits is a convention for writing commit messages in a predictable shape: a **type**, an optional **scope**, and a short description. `feat(workflow): add topological scheduler`. `fix(api): reject stale submission timestamps`. `chore: scaffold Kairo monorepo and application factory`.
+
+The point isn't tidiness for its own sake. The prefix makes the history *readable two ways at once*. A machine can scan it — every `feat` and `fix` since the last release becomes a changelog, and can even drive the version number. A person can scan it too: at 3 a.m., staring at a log to find the change that broke production, `fix(api): reject stale submission timestamps` tells you where to look, and `wip` tells you nothing. Think of it like labeling boxes when you move — "kitchen: plates" beats "stuff" the moment you actually need the plates.
+
+The common types are `feat` (a new capability), `fix` (a bug fix), `chore` (plumbing and setup), `docs`, `refactor`, and `test`. The scope in parentheses is optional and just names the corner of the system you touched.
+
+**Use it** on any repository whose history you might one day read — which is all of them. There's almost no "when not to," beyond a throwaway spike you'll delete tomorrow.
+
+The common mistake is treating the message as a toll you pay to be allowed to push — `wip`, `stuff`, `updates`. The code is what the machine runs; the commit is what the humans read. Waste the message and you've thrown away the only durable record of *why* the code is the way it is.
