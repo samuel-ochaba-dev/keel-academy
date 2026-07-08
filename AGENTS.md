@@ -25,19 +25,28 @@ An online school for software engineers. Novel-driven curriculum, 16 chapters, 4
 
 ## Architecture
 
-- `apps/web/src/app/` - Next.js App Router pages and route handlers
-- `apps/web/src/components/ui/` - shadcn components (never modify directly, extend via variants)
-- `apps/web/src/components/` - app-specific components
-- `apps/web/src/lib/` - domain services, db client, auth, API helpers
-- `apps/web/src/styles/` - globals.css (tokens), typography.css
-- `apps/web/content/` - MDX chapters, lexicon, DSA entries
-- `apps/web/drizzle/` - schema and migrations
-- `packages/ui/` - shared UI extensions
+App code uses a flat `app/` layout (no `src/`).
+
+- `apps/web/app/` - Next.js App Router pages and route handlers
+- `apps/web/app/globals.css` - design tokens (OKLCH); `apps/web/app/styles/` - typography, panel, code-theme CSS
+- `apps/web/app/api/` - route handlers for external APIs and webhooks
+- `apps/web/components/ui/` - shadcn-style primitives (never modify directly, extend via variants)
+- `apps/web/components/` - app-specific components
+- `apps/web/lib/` - domain services, db client (`lib/db/`), auth, env schema (`lib/env.ts`), helpers
+- `apps/web/content/` - MDX chapters, lexicon, DSA entries (Velite pipeline; `velite.config.ts`)
+- `apps/web/drizzle/` - generated SQL migrations (schema lives in `apps/web/lib/db/schema.ts`)
+- `packages/ui/` - shared UI extensions (e.g. Wordmark)
 - `packages/email/` - transactional email templates
-- `packages/content/` - content schemas and validation helpers
 - `packages/test-suite/` - chapter test suites
-- `packages/cli/` - student CLI
-- `packages/config/` - shared TypeScript, lint, Tailwind, and formatting config
+- `packages/cli/` - student CLI (`keel`)
+- `packages/typescript-config/` - shared `tsconfig` bases
+- `packages/eslint-config/` - shared ESLint config
+
+Deviations from the original design: config is split into `packages/typescript-config`
+and `packages/eslint-config` (Turborepo convention) rather than a single `packages/config`;
+Prettier is configured at the repo root (`.prettierrc.json`); Tailwind v4 is CSS-first
+(tokens in `app/globals.css`, no config file). `packages/content` is deferred — content
+schemas currently live with the app in `apps/web`.
 
 ## Conventions
 
@@ -47,7 +56,7 @@ An online school for software engineers. Novel-driven curriculum, 16 chapters, 4
 - Content layers differentiated via data-layer attribute, not separate color systems.
 - 2-space indent. No semicolons in TS. Single quotes.
 - Prefer server components. Mark 'use client' only when necessary.
-- External APIs and webhooks live in `apps/web/src/app/api/` route handlers. Use Inngest for anything async.
+- External APIs and webhooks live in `apps/web/app/api/` route handlers. Use Inngest for anything async.
 - Use `proxy.ts` for coarse request protection in Next.js 16; keep business authorization in server/domain code.
 - Never use `any`. Strict TypeScript everywhere.
 - Commit messages: conventional commits (feat:, fix:, chore:, docs:).

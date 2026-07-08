@@ -90,7 +90,7 @@ export default async function ChapterPage({
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:px-10">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-10 md:px-10 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="hidden lg:block">
           <div className="sticky top-24">
             <ChapterSidebar
@@ -166,7 +166,9 @@ export default async function ChapterPage({
                 </div>
                 <div className="flex gap-3">
                   {userId ? (
-                    <form action={completeChapterAction.bind(null, chapter.slug)}>
+                    <form
+                      action={completeChapterAction.bind(null, chapter.slug)}
+                    >
                       <Button
                         type="submit"
                         variant={status === 'complete' ? 'outline' : 'default'}

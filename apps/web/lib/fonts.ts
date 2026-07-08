@@ -1,9 +1,15 @@
-import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import { Newsreader } from 'next/font/google'
+import { Bricolage_Grotesque, Newsreader } from 'next/font/google'
 
-// Newsreader powers the novel. `opsz` must be opted in explicitly — next/font
-// only auto-includes the weight axis for variable fonts.
+// Bricolage Grotesque is the main UI + heading font.
+export const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  display: 'swap',
+  axes: ['opsz'],
+  variable: '--font-bricolage',
+})
+
+// Newsreader powers the novel reading layer. `opsz` must be opted in explicitly.
 export const newsreader = Newsreader({
   subsets: ['latin'],
   display: 'swap',
@@ -11,9 +17,9 @@ export const newsreader = Newsreader({
   variable: '--font-newsreader',
 })
 
-// geist hard-codes --font-geist-sans / --font-geist-mono.
+// geist hard-codes --font-geist-mono (used for code).
 export const fontVariables = [
-  GeistSans.variable,
+  bricolage.variable,
   GeistMono.variable,
   newsreader.variable,
 ].join(' ')

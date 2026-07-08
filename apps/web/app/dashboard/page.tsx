@@ -22,11 +22,12 @@ import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
-const statusVariant: Record<ChapterStatus, 'success' | 'secondary' | 'locked'> = {
-  complete: 'success',
-  reading: 'secondary',
-  not_started: 'locked',
-}
+const statusVariant: Record<ChapterStatus, 'success' | 'secondary' | 'locked'> =
+  {
+    complete: 'success',
+    reading: 'secondary',
+    not_started: 'locked',
+  }
 
 const statusLabel: Record<ChapterStatus, string> = {
   complete: 'Complete',
@@ -64,15 +65,17 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10 md:px-10">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 md:px-10">
         <div className="space-y-2">
           <Badge variant="secondary">Your progress</Badge>
           <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-            Welcome back, {session.user.name ?? session.user.email ?? 'engineer'}
+            Welcome back,{' '}
+            {session.user.name ?? session.user.email ?? 'engineer'}
           </h1>
           <p className="text-muted-foreground">
             {completed} of {siteConfig.totalChaptersPlanned} planned chapters
-            complete. M0 ships the first chapter — the rest of the shape is real.
+            complete. M0 ships the first chapter — the rest of the shape is
+            real.
           </p>
         </div>
 
@@ -132,7 +135,10 @@ export default async function DashboardPage() {
                 <Progress value={chapter.percent} />
                 <Link
                   href={chapter.url}
-                  className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
+                  className={cn(
+                    buttonVariants({ variant: 'outline' }),
+                    'w-full',
+                  )}
                 >
                   Open chapter
                 </Link>

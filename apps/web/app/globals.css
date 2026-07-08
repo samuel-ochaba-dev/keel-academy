@@ -7,11 +7,12 @@
 @source '../../../packages/ui/src';
 
 /*
- * Keelacademy design system — docs/design-system.md.
- * Warm cream/coral, single coral accent, dark mode preserves warm undertone.
- * Tailwind v4: tokens are plain oklch() vars, mapped to utilities via
- * `@theme inline` (inline is REQUIRED so `bg-background` resolves per-element
- * and flips under `.dark`).
+ * Keelacademy design system.
+ * Warm ecru paper (light) + warm espresso (dark), deep terracotta primary,
+ * deep teal secondary. Warmth kept from Zen; all token pairs verified WCAG AA
+ * (body text AAA) via scripts/contrast-check.mjs.
+ * Tailwind v4: tokens map to utilities via `@theme inline` (inline is REQUIRED
+ * so `bg-background` resolves per-element and flips under `.dark`).
  */
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -43,10 +44,10 @@
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-bricolage);
   --font-serif: var(--font-newsreader);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --font-heading: var(--font-bricolage);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -56,41 +57,45 @@
   --shadow-panel: var(--shadow-panel);
 }
 
-/* Light mode — warm cream + soft charcoal + coral ember */
+/*
+ * Light mode — warm ecru paper, deep terracotta + teal accents.
+ * Every text pair clears WCAG AA (body text AAA); rings/fills/input borders
+ * clear the 3:1 non-text bar. Ratios verified in scripts/contrast-check.mjs.
+ */
 :root {
-  --background: oklch(97% 0.01 85);
-  --foreground: oklch(25% 0.01 70);
+  --background: oklch(0.9531 0.0173 99.60); /* warm ecru paper */
+  --foreground: oklch(0.2663 0.0098 39.32); /* warm near-black ink — 13.4:1 */
 
-  --card: oklch(95% 0.01 85);
-  --card-foreground: oklch(25% 0.01 70);
-  --popover: oklch(97% 0.01 85);
-  --popover-foreground: oklch(25% 0.01 70);
+  --card: oklch(0.9237 0.0217 95.30); /* warm raised surface */
+  --card-foreground: oklch(0.2663 0.0098 39.32);
+  --popover: oklch(0.9575 0.0149 94.20);
+  --popover-foreground: oklch(0.2663 0.0098 39.32);
 
-  --primary: oklch(62% 0.18 25);
-  --primary-foreground: oklch(99% 0.005 85);
+  --primary: oklch(0.5153 0.1389 35.08); /* deep terracotta — white 5.6:1, as link 5.2:1 */
+  --primary-foreground: oklch(0.9770 0.0114 84.58);
 
-  --secondary: oklch(93% 0.01 85);
-  --secondary-foreground: oklch(30% 0.01 70);
+  --secondary: oklch(0.3902 0.0515 187.75); /* deep teal — white 8.8:1 */
+  --secondary-foreground: oklch(0.9770 0.0114 84.58);
 
-  --muted: oklch(93% 0.01 85);
-  --muted-foreground: oklch(55% 0.01 70);
+  --muted: oklch(0.9182 0.0192 93.67);
+  --muted-foreground: oklch(0.4264 0.0099 36.51); /* warm greige — 7.2:1 on paper */
 
-  --accent: oklch(90% 0.06 25);
-  --accent-foreground: oklch(25% 0.01 70);
+  --accent: oklch(0.9101 0.0224 89.80); /* subtle warm hover surface */
+  --accent-foreground: oklch(0.2663 0.0098 39.32);
 
-  --destructive: oklch(55% 0.22 29);
-  --destructive-foreground: oklch(99% 0.005 85);
+  --destructive: oklch(0.5206 0.1582 29.95); /* deep red — white 5.6:1 */
+  --destructive-foreground: oklch(0.9770 0.0114 84.58);
 
-  --success: oklch(75% 0.1 145);
-  --success-foreground: oklch(25% 0.01 70);
+  --success: oklch(0.4870 0.0842 159.09); /* forest green — white 5.7:1 */
+  --success-foreground: oklch(0.9770 0.0114 84.58);
 
-  --border: oklch(88% 0.01 85);
-  --input: oklch(88% 0.01 85);
-  --ring: oklch(62% 0.18 25);
+  --border: oklch(0.8642 0.0268 90.12); /* soft warm divider */
+  --input: oklch(0.5585 0.0290 84.56); /* form-control border — 4.1:1 non-text */
+  --ring: oklch(0.5153 0.1389 35.08);
 
-  --chart-1: oklch(62% 0.18 25);
-  --chart-2: oklch(75% 0.1 145);
-  --chart-3: oklch(88% 0.01 85);
+  --chart-1: oklch(0.5153 0.1389 35.08); /* terracotta — lexicon accent */
+  --chart-2: oklch(0.4347 0.0569 149.44); /* olive — dsa accent */
+  --chart-3: oklch(0.8642 0.0268 90.12);
 
   --radius: 0.625rem;
 
@@ -106,41 +111,45 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* Dark mode — warm charcoal, never blue-gray. Coral stays vibrant. */
+/*
+ * Dark mode — warm espresso surfaces + warm off-white text. Terracotta and
+ * teal lighten (Material-3 style) so they carry dark text AND read as accents
+ * on the dark base. All pairs AA-verified in scripts/contrast-check.mjs.
+ */
 .dark {
-  --background: oklch(15% 0.01 70);
-  --foreground: oklch(92% 0.01 85);
+  --background: oklch(0.2161 0.0061 56.04); /* warm espresso */
+  --foreground: oklch(0.9127 0.0249 91.62); /* warm off-white — 13.5:1 */
 
-  --card: oklch(18% 0.01 70);
-  --card-foreground: oklch(92% 0.01 85);
-  --popover: oklch(18% 0.01 70);
-  --popover-foreground: oklch(92% 0.01 85);
+  --card: oklch(0.2456 0.0141 81.63);
+  --card-foreground: oklch(0.9127 0.0249 91.62);
+  --popover: oklch(0.2456 0.0141 81.63);
+  --popover-foreground: oklch(0.9127 0.0249 91.62);
 
-  --primary: oklch(65% 0.18 25);
-  --primary-foreground: oklch(15% 0.01 70);
+  --primary: oklch(0.7151 0.1182 44.80); /* lightened terracotta — dark text 6.6:1 */
+  --primary-foreground: oklch(0.2161 0.0061 56.04);
 
-  --secondary: oklch(22% 0.01 70);
-  --secondary-foreground: oklch(88% 0.01 85);
+  --secondary: oklch(0.6847 0.0639 183.95); /* lightened teal — dark text 6.4:1 */
+  --secondary-foreground: oklch(0.2161 0.0061 56.04);
 
-  --muted: oklch(22% 0.01 70);
-  --muted-foreground: oklch(60% 0.01 70);
+  --muted: oklch(0.2456 0.0141 81.63);
+  --muted-foreground: oklch(0.7019 0.0276 84.59); /* 6.6:1 on espresso */
 
-  --accent: oklch(25% 0.04 25);
-  --accent-foreground: oklch(92% 0.01 85);
+  --accent: oklch(0.2814 0.0139 67.21); /* warm hover surface */
+  --accent-foreground: oklch(0.9127 0.0249 91.62);
 
-  --destructive: oklch(55% 0.22 29);
-  --destructive-foreground: oklch(99% 0.005 85);
+  --destructive: oklch(0.6498 0.1425 29.39); /* lightened red — dark text 5.1:1 */
+  --destructive-foreground: oklch(0.2161 0.0061 56.04);
 
-  --success: oklch(70% 0.1 145);
-  --success-foreground: oklch(15% 0.01 70);
+  --success: oklch(0.6435 0.0909 157.08); /* lightened green — dark text 5.5:1 */
+  --success-foreground: oklch(0.2161 0.0061 56.04);
 
-  --border: oklch(25% 0.01 70);
-  --input: oklch(25% 0.01 70);
-  --ring: oklch(65% 0.18 25);
+  --border: oklch(0.3262 0.0157 67.23); /* soft warm divider */
+  --input: oklch(0.5270 0.0262 84.56); /* form-control border — 3.3:1 non-text */
+  --ring: oklch(0.7151 0.1182 44.80);
 
-  --chart-1: oklch(65% 0.18 25);
-  --chart-2: oklch(70% 0.1 145);
-  --chart-3: oklch(25% 0.01 70);
+  --chart-1: oklch(0.7151 0.1182 44.80);
+  --chart-2: oklch(0.7118 0.0759 151.05); /* lightened olive — dsa accent */
+  --chart-3: oklch(0.3262 0.0157 67.23);
 
   --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.2);
   --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.3);

@@ -17,7 +17,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn(fontVariables)}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={cn(fontVariables)}
+    >
       <body className="min-h-screen bg-background font-sans text-foreground">
         <ThemeProvider
           attribute="class"

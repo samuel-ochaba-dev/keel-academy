@@ -35,18 +35,21 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M0 - Walking Skeleton
+**Current Milestone:** M1 - Repo Foundation
 
-**Goal:** prove the product can render one chapter, authenticate one user path, persist one progress event, and keep the planned workspace boundaries intact.
+**Goal:** make the repository stable enough for daily implementation — task
+orchestration, strict types, base routing conventions, a validated env contract,
+documented CI, and docs that match the real folder structure.
 
 **Next Actions:**
 
-1. Scaffold the pnpm workspace with `apps/web` and initial `packages/*`.
-2. Add Turborepo and a root `turbo.json` for repo-wide `dev`, `build`, `lint`, `check-types`, and future `test` tasks.
-3. Create the Next.js 16 app shell with Tailwind, shadcn/ui, fonts, and OKLCH tokens.
-4. Add the first content pipeline slice: one chapter, one lexicon entry, one DSA entry.
-5. Add the first database slice: Drizzle schema, Turso client, and one progress write.
-6. Render one chapter page and one protected dashboard shell.
+1. Add a validated environment schema (`@t3-oss/env-nextjs` + Zod) and enforce it at build time.
+2. Add base App Router conventions: `error.tsx`, `global-error.tsx`, `loading.tsx`.
+3. Document CI and add a working GitHub Actions workflow (`turbo run lint check-types build`).
+4. Reconcile `AGENTS.md` with the real flat `app/` layout and the split config packages.
+5. Commit the design-token pass (OKLCH palette, Bricolage UI font, WCAG contrast proof).
+
+CI reference: see `docs/ci-plan.md`.
 
 ## Milestone Overview
 
@@ -67,7 +70,7 @@ This plan follows three credible planning ideas:
 
 ## M0 - Walking Skeletons
 
-**Status:** Current
+**Status:** Done
 
 **Goal:** create the smallest end-to-end version of Keelacademy that touches the real architectural seams.
 
@@ -99,7 +102,7 @@ This plan follows three credible planning ideas:
 
 ## M1 - Repo Foundation
 
-**Status:** Planned
+**Status:** Current
 
 **Goal:** make the repository stable enough for daily implementation.
 
