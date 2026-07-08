@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { CheckIcon, CircleDotIcon, CircleIcon } from 'lucide-react'
-import type { Chapter } from '@/lib/content'
+import type { Chapter } from '@keelacademy/content/lookup'
 import type { ChapterStatus } from '@/lib/db/schema'
 import { cn } from '@/lib/utils'
 

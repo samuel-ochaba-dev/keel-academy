@@ -35,19 +35,17 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M1 - Repo Foundation
+**Current Milestone:** M2 - Content Pipeline
 
-**Goal:** make the repository stable enough for daily implementation — task
-orchestration, strict types, base routing conventions, a validated env contract,
-documented CI, and docs that match the real folder structure.
+**Goal:** make content-as-code reliable before building deeper learning flows —
+Velite schemas and validation, MDX components, build-time syntax highlighting,
+and typed content lookup helpers in their own package.
 
 **Next Actions:**
 
-1. Add a validated environment schema (`@t3-oss/env-nextjs` + Zod) and enforce it at build time.
-2. Add base App Router conventions: `error.tsx`, `global-error.tsx`, `loading.tsx`.
-3. Document CI and add a working GitHub Actions workflow (`turbo run lint check-types build`).
-4. Reconcile `AGENTS.md` with the real flat `app/` layout and the split config packages.
-5. Commit the design-token pass (OKLCH palette, Bricolage UI font, WCAG contrast proof).
+1. Extend the fixture coverage (more chapters/lexicon/DSA) now that the schemas and components are stable.
+2. Revisit whether build-alongs should join chapters by a typed reference rather than slug convention.
+3. Feed the syntax-highlight token palette (`--shiki-*`) into the OKLCH design tokens if code contrast needs tuning.
 
 CI reference: see `docs/ci-plan.md`.
 
@@ -102,7 +100,7 @@ CI reference: see `docs/ci-plan.md`.
 
 ## M1 - Repo Foundation
 
-**Status:** Current
+**Status:** Done
 
 **Goal:** make the repository stable enough for daily implementation.
 
@@ -133,25 +131,42 @@ CI reference: see `docs/ci-plan.md`.
 
 ## M2 - Content Pipeline
 
-**Status:** Planned
+**Status:** Current
 
 **Goal:** make content as code reliable before building deeper learning flows.
 
 **Build:**
 
-- Velite content schemas.
-- chapter metadata schema.
-- lexicon and DSA schemas.
+- Velite content schemas. _(done — `packages/content/velite.config.ts`)_
+- chapter metadata schema. _(done)_
+- lexicon and DSA schemas (shared `term` slug group). _(done)_
 - MDX components for `Term`, code blocks, callouts, and layer wrappers.
+  _(done — `Term`, `Callout`, `DSAComplexity`; code blocks via rehype-pretty-code + Shiki;
+  layers via `data-layer` wrappers)_
 - build-time validation for duplicate slugs, missing metadata, broken term links, and missing chapter references.
-- typed content lookup helpers in `packages/content`.
-- one complete chapter fixture.
+  _(done — schema `strict: true` + `prepare` hook throws on unknown `lexicon[]`/`dsa[]`
+  and unknown inline `<Term slug>`)_
+- typed content lookup helpers in `packages/content`. _(done — extracted from `apps/web`
+  into `@keelacademy/content`; app consumes `@keelacademy/content/collections`
+  and `@keelacademy/content/lookup`)_
+- one complete chapter fixture. _(done — Chapter 1 "The First Commit" + build-along,
+  3 lexicon, 2 DSA)_
 
 **Exit Criteria:**
 
-- Broken content references fail validation.
-- The chapter page can load typed content without database queries.
-- Standalone lexicon and DSA pages render from the same source as inline panels.
+- Broken content references fail validation. _(proven: an unknown `<Term>` slug or
+  chapter `lexicon[]`/`dsa[]` ref fails `velite`, failing the build)_
+- The chapter page can load typed content without database queries. _(met — pages read
+  the Velite-generated collections; DB is touched only for progress)_
+- Standalone lexicon and DSA pages render from the same source as inline panels. _(met —
+  both the `/lexicon/[slug]` `/dsa/[slug]` pages and the in-chapter `Term` slide-over
+  render the same `entry.body`)_
+
+**Notes:** the M0 rebuild (2026-07-07) already delivered the Velite pipeline, validation,
+`Term`, and standalone pages, so M2 satisfied its exit criteria at entry. The M2 work
+proper was: extracting the pipeline into `@keelacademy/content` (honoring ADR-009, which
+M0 had temporarily deferred), adding build-time Shiki highlighting, and adding the
+`Callout` / `DSAComplexity` MDX components named in ADR-004.
 
 ---
 

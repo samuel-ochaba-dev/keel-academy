@@ -3,16 +3,12 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "imports": {
-    "#velite": "./.velite/index.js"
-  },
   "scripts": {
-    "dev": "velite && next dev --port 3000",
-    "content": "velite",
-    "build": "velite --clean && next build",
+    "dev": "next dev --port 3000",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
-    "check-types": "velite && next typegen && tsc --noEmit",
+    "check-types": "next typegen && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
     "db:push": "drizzle-kit generate && node scripts/migrate.mjs",
@@ -21,6 +17,7 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "1.11.2",
+    "@keelacademy/content": "workspace:*",
     "@keelacademy/ui": "workspace:*",
     "@libsql/client": "^0.17.4",
     "@t3-oss/env-nextjs": "^0.13.11",
@@ -50,12 +47,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.0.0",
     "postcss": "^8.5.16",
-    "remark-mdx": "^3.0.0",
-    "remark-parse": "^11.0.0",
     "tailwindcss": "^4.3.2",
-    "typescript": "5.9.2",
-    "unified": "^11.0.5",
-    "unist-util-visit": "^5.0.0",
-    "velite": "^0.4.0"
+    "typescript": "5.9.2"
   }
 }

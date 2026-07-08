@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRightIcon } from 'lucide-react'
-import { listChapters } from '@/lib/content'
+import { listChapters } from '@keelacademy/content/lookup'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'

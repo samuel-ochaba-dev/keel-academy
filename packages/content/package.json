@@ -1,0 +1,35 @@
+{
+  "name": "@keelacademy/content",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "imports": {
+    "#velite": "./.velite/index.js"
+  },
+  "exports": {
+    "./collections": "./src/collections.ts",
+    "./lookup": "./src/lookup.ts"
+  },
+  "scripts": {
+    "content": "velite",
+    "build": "velite --clean",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "velite && tsc --noEmit"
+  },
+  "dependencies": {
+    "rehype-pretty-code": "0.14.4",
+    "shiki": "4.3.1"
+  },
+  "devDependencies": {
+    "@keelacademy/eslint-config": "workspace:*",
+    "@keelacademy/typescript-config": "workspace:*",
+    "@types/mdx": "^2.0.13",
+    "remark-mdx": "^3.0.0",
+    "remark-parse": "^11.0.0",
+    "typescript": "5.9.2",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0",
+    "velite": "^0.4.0"
+  }
+}

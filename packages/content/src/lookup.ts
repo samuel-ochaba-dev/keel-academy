@@ -1,10 +1,19 @@
 import { buildAlongs, chapters, dsa, lexicon } from '#velite'
+import type {
+  BuildAlong,
+  Chapter,
+  DsaEntry,
+  LexiconEntry,
+  ReferenceEntry,
+} from './collections'
 
-export type Chapter = (typeof chapters)[number]
-export type LexiconEntry = (typeof lexicon)[number]
-export type DsaEntry = (typeof dsa)[number]
-export type BuildAlong = (typeof buildAlongs)[number]
-export type ReferenceEntry = LexiconEntry | DsaEntry
+export type {
+  BuildAlong,
+  Chapter,
+  DsaEntry,
+  LexiconEntry,
+  ReferenceEntry,
+} from './collections'
 
 export function listChapters(): Chapter[] {
   return [...chapters].sort((a, b) => a.order - b.order)

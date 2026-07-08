@@ -10,7 +10,7 @@
   ],
   "tasks": {
     "content": {
-      "cache": false
+      "outputs": [".velite/**"]
     },
     "build": {
       "dependsOn": ["^build"],
@@ -29,7 +29,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^content"]
     }
   }
 }

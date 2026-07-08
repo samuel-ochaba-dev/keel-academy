@@ -3,6 +3,19 @@ import { unified } from 'unified'
 import remarkParse from 'remark-parse'
 import remarkMdx from 'remark-mdx'
 import { visit } from 'unist-util-visit'
+import rehypePrettyCode, {
+  type Options as PrettyCodeOptions,
+} from 'rehype-pretty-code'
+
+// Build-time syntax highlighting (Shiki via rehype-pretty-code). Dual themes so
+// code can follow light/dark; keepBackground:false hands the background to
+// app/styles/code-theme.css, which keeps code blocks dark in both modes
+// (docs/design-system.md). rehype-pretty-code emits --shiki-light/--shiki-dark
+// CSS variables that the stylesheet resolves.
+const prettyCodeOptions: PrettyCodeOptions = {
+  theme: { light: 'github-light', dark: 'github-dark' },
+  keepBackground: false,
+}
 
 /*
  * Content-as-code pipeline (ADR-004 / design-doc §8).
@@ -102,6 +115,11 @@ const buildAlongs = defineCollection({
 export default defineConfig({
   root: 'content',
   strict: true,
+  // s.mdx() bodies flow through MDX's own compiler, so highlighting is wired via
+  // mdx.rehypePlugins (MdxOptions extends MDX CompileOptions).
+  mdx: {
+    rehypePlugins: [[rehypePrettyCode, prettyCodeOptions]],
+  },
   collections: { chapters, lexicon, dsa, buildAlongs },
   prepare: ({ chapters, lexicon, dsa, buildAlongs }) => {
     const lexSlugs = new Set(lexicon.map((e) => e.slug))

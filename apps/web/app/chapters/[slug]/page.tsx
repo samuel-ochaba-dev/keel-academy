@@ -7,7 +7,7 @@ import {
   getChapter,
   getChapterEntries,
   listChapters,
-} from '@/lib/content'
+} from '@keelacademy/content/lookup'
 import {
   getAllProgress,
   getChapterProgress,

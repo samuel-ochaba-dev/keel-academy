@@ -2,6 +2,8 @@ import * as runtime from 'react/jsx-runtime'
 import type { ComponentProps, ComponentType } from 'react'
 import type { MDXComponents } from 'mdx/types'
 import { Term } from '@/components/term'
+import { Callout } from '@/components/callout'
+import { DSAComplexity } from '@/components/dsa-complexity'
 import { cn } from '@/lib/utils'
 
 // Velite's s.mdx() stores the body as a function-body code string. This revives
@@ -17,6 +19,8 @@ function evalMdx(code: string) {
 // handle rhythm and inline treatments.
 const baseComponents: MDXComponents = {
   Term,
+  Callout,
+  DSAComplexity,
   h1: (props: ComponentProps<'h1'>) => (
     <h1 className="font-heading text-3xl font-semibold tracking-tight" {...props} />
   ),
@@ -58,9 +62,11 @@ const baseComponents: MDXComponents = {
   hr: (props: ComponentProps<'hr'>) => (
     <hr className="my-10 border-border" {...props} />
   ),
-  pre: (props: ComponentProps<'pre'>) => (
-    <pre data-code-block className="mt-[1.5em]" {...props} />
-  ),
+  // Fenced code blocks are rewritten at build time by rehype-pretty-code into
+  // <figure data-rehype-pretty-code-figure><pre><code>…</code></pre></figure>
+  // (styled in app/styles/code-theme.css), so we intentionally do NOT override
+  // `pre` here. This `code` treatment therefore only hits inline `code`; inside
+  // a figure the code-theme stylesheet resets it back to plain tokens.
   code: ({ className, ...props }: ComponentProps<'code'>) => (
     <code
       className={cn('rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em]', className)}

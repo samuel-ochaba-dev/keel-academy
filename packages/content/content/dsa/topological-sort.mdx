@@ -10,6 +10,33 @@ A **topological sort** takes a [directed acyclic graph](/dsa/directed-acyclic-gr
 
 The cleanest way to see the mechanism is **Kahn's algorithm**. Count, for each node, how many arrows point _into_ it (its in-degree). Any node with in-degree zero depends on nothing, so it's safe to place next. Place it, remove it, and decrement the in-degree of everything it pointed to. Repeat. You're peeling off "ready to go" nodes until none remain. It runs in `O(V + E)` — you touch every node and every edge once.
 
+<DSAComplexity time="O(V + E)" space="O(V)" />
+
+Here it is in full — the shape you reach for whenever dependencies need an order:
+
+```python title="topo_sort.py"
+from collections import deque
+
+
+def topo_sort(nodes, edges):
+    indegree = {n: 0 for n in nodes}
+    for _, dst in edges:
+        indegree[dst] += 1
+
+    ready = deque(n for n in nodes if indegree[n] == 0)
+    order = []
+    while ready:
+        node = ready.popleft()
+        order.append(node)
+        for src, dst in edges:
+            if src == node and (indegree[dst] := indegree[dst] - 1) == 0:
+                ready.append(dst)
+
+    if len(order) != len(nodes):
+        raise ValueError("cycle detected: no valid order exists")
+    return order
+```
+
 Here's the part that feels like a gift: if you get stuck — nodes remain but none have in-degree zero — you have found a cycle. Everything left is waiting on something else in the pile, forever. So the same algorithm that orders your dependencies also _detects the impossible ones_.
 
 Two things people misremember. First, the order usually **isn't unique** — if two nodes both depend on nothing, either can go first, and both answers are correct. Second, a topological order exists **only if the graph is acyclic**; a cycle means no valid order, which is precisely how you'd catch two extensions that each wait on the other.

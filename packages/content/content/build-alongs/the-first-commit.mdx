@@ -46,8 +46,7 @@ kairo/
 
 The factory builds the app deliberately. Import order stops being an accident.
 
-```python
-# api/app_factory.py
+```python title="api/app_factory.py"
 from flask import Flask, jsonify
 
 
@@ -98,7 +97,11 @@ curl localhost:8000/health
 {"status": "healthy"}
 ```
 
-**If instead you see** `ModuleNotFoundError: No module named 'api'` → you're inside the `api/` folder. Run from the repository root (`cd ..`) so `api` is an importable package.
+<Callout variant="warning" title="Run from the repository root">
+  If you see `ModuleNotFoundError: No module named 'api'`, you're inside the
+  `api/` folder. Run from the repository root (`cd ..`) so `api` is an
+  importable package.
+</Callout>
 
 ### 5. Make the first commit
 

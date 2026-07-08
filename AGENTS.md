@@ -33,8 +33,11 @@ App code uses a flat `app/` layout (no `src/`).
 - `apps/web/components/ui/` - shadcn-style primitives (never modify directly, extend via variants)
 - `apps/web/components/` - app-specific components
 - `apps/web/lib/` - domain services, db client (`lib/db/`), auth, env schema (`lib/env.ts`), helpers
-- `apps/web/content/` - MDX chapters, lexicon, DSA entries (Velite pipeline; `velite.config.ts`)
 - `apps/web/drizzle/` - generated SQL migrations (schema lives in `apps/web/lib/db/schema.ts`)
+- `packages/content/` - Velite content pipeline: schemas + cross-ref validation (`velite.config.ts`),
+  the MDX source (`content/` — chapters, build-alongs, lexicon, DSA), and typed lookup helpers.
+  Consumed via `@keelacademy/content/collections` (generated data + types) and
+  `@keelacademy/content/lookup` (helpers). Never import the generated `#velite` output directly from the app.
 - `packages/ui/` - shared UI extensions (e.g. Wordmark)
 - `packages/email/` - transactional email templates
 - `packages/test-suite/` - chapter test suites
@@ -42,11 +45,14 @@ App code uses a flat `app/` layout (no `src/`).
 - `packages/typescript-config/` - shared `tsconfig` bases
 - `packages/eslint-config/` - shared ESLint config
 
+MDX authoring: fenced code blocks are highlighted at build time by rehype-pretty-code (Shiki,
+dual light/dark theme); custom components available in MDX are `Term`, `Callout`, and
+`DSAComplexity` (registered in `apps/web/components/mdx-content.tsx`).
+
 Deviations from the original design: config is split into `packages/typescript-config`
 and `packages/eslint-config` (Turborepo convention) rather than a single `packages/config`;
 Prettier is configured at the repo root (`.prettierrc.json`); Tailwind v4 is CSS-first
-(tokens in `app/globals.css`, no config file). `packages/content` is deferred — content
-schemas currently live with the app in `apps/web`.
+(tokens in `app/globals.css`, no config file).
 
 ## Conventions
 
