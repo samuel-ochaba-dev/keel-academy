@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -41,6 +42,7 @@ export function TermPanelProvider({
   children: ReactNode
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const headingRef = useRef<HTMLHeadingElement>(null)
   const [activeSlug, setActiveSlug] = useState<string | null>(null)
   const [viewed, setViewed] = useState<ReadonlySet<string>>(() => new Set())
 
@@ -54,10 +56,19 @@ export function TermPanelProvider({
       if (!bySlug.has(slug)) return
       setActiveSlug(slug)
       setViewed((prev) => new Set(prev).add(slug))
-      dialogRef.current?.showModal()
+      // Guard: switching terms from a link *inside* the open panel must not call
+      // showModal() on an already-open dialog (it throws InvalidStateError).
+      if (!dialogRef.current?.open) dialogRef.current?.showModal()
     },
     [bySlug],
   )
+
+  // Content-heavy dialog: deliberately land focus on the term title so a screen
+  // reader announces the concept first, rather than the browser's default of
+  // focusing the first focusable descendant (which could be a link deep inside).
+  useEffect(() => {
+    if (activeSlug) headingRef.current?.focus()
+  }, [activeSlug])
 
   const value = useMemo<TermPanelContextValue>(
     () => ({ openTerm, viewed }),
@@ -72,7 +83,9 @@ export function TermPanelProvider({
       <dialog
         ref={dialogRef}
         data-term-panel
-        aria-label={active ? `${active.kind} reference: ${active.title}` : 'Reference'}
+        aria-labelledby={active ? 'term-panel-title' : undefined}
+        aria-describedby={active ? 'term-panel-summary' : undefined}
+        aria-label={active ? undefined : 'Reference'}
         onClose={() => setActiveSlug(null)}
         // Native dialog fires a click on the element itself when the backdrop
         // is clicked; the panel content is a child, so this only closes on
@@ -94,10 +107,17 @@ export function TermPanelProvider({
                 <Badge variant={active.kind === 'lexicon' ? 'default' : 'success'}>
                   {active.kind === 'lexicon' ? 'Lexicon' : 'Emerging DSA'}
                 </Badge>
-                <h2 className="font-heading text-lg font-semibold text-foreground">
+                <h2
+                  ref={headingRef}
+                  id="term-panel-title"
+                  tabIndex={-1}
+                  className="font-heading text-lg font-semibold text-foreground outline-none"
+                >
                   {active.title}
                 </h2>
-                <p className="text-sm text-muted-foreground">{active.summary}</p>
+                <p id="term-panel-summary" className="text-sm text-muted-foreground">
+                  {active.summary}
+                </p>
               </div>
               <Button
                 variant="ghost"

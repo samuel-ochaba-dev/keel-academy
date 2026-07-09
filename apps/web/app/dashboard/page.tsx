@@ -73,9 +73,14 @@ export default async function DashboardPage() {
             {session.user.name ?? session.user.email ?? 'engineer'}
           </h1>
           <p className="text-muted-foreground">
-            {completed} of {siteConfig.totalChaptersPlanned} planned chapters
-            complete. M0 ships the first chapter — the rest of the shape is
-            real.
+            {completed === 0
+              ? `You're at the start — chapter one is where it begins.`
+              : completed === chapters.length
+                ? `Every shipped chapter complete. You're ahead of the curriculum.`
+                : `${completed} down, ${chapters.length - completed} to go in the shipped content. Keep the momentum going.`}{' '}
+            <span className="text-foreground/70">
+              {siteConfig.totalChaptersPlanned} chapters are planned in all.
+            </span>
           </p>
         </div>
 
@@ -100,8 +105,12 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Continue</CardTitle>
-              <CardDescription>Pick up where you left off.</CardDescription>
+              <CardTitle>{completed > 0 ? 'Continue' : 'Start here'}</CardTitle>
+              <CardDescription>
+                {current
+                  ? `${current.part} · Chapter ${current.order}`
+                  : 'Pick up where you left off.'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {current ? (
@@ -109,7 +118,7 @@ export default async function DashboardPage() {
                   href={current.url}
                   className={cn(buttonVariants(), 'w-full')}
                 >
-                  Open {current.title}
+                  {completed > 0 ? 'Resume' : 'Open'} {current.title}
                   <ArrowRightIcon className="size-4" aria-hidden />
                 </Link>
               ) : null}

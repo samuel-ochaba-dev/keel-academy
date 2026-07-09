@@ -6,7 +6,7 @@ type WordmarkProps = ComponentProps<'span'> & {
 }
 
 /**
- * The Keelacademy brand lockup: a small coral "keel" mark plus the wordmark.
+ * The Keelacademy brand lockup: a small indigo "keel" mark plus the wordmark.
  * Shared through @keelacademy/ui so every surface (web header, emails-in-app,
  * future docs) renders the identity the same way.
  */

@@ -7,10 +7,21 @@
 @source '../../../packages/ui/src';
 
 /*
- * Keelacademy design system.
- * Warm ecru paper (light) + warm espresso (dark), deep terracotta primary,
- * deep teal secondary. Warmth kept from Zen; all token pairs verified WCAG AA
- * (body text AAA) via scripts/contrast-check.mjs.
+ * Keelacademy design system — "cool slate + indigo" (reading-first).
+ * Replaces the earlier warm-paper/coral look. Grounded in credible research:
+ *   - Light bg is a high-luminance cool OFF-white, never #fff — luminance drives
+ *     the positive-polarity reading advantage (Piepenbrock/Buchner 2013/2014),
+ *     while a hair off pure white avoids glare/visual stress (BDA; Frontiers 2025).
+ *   - Dark bg is an ELEVATED near-black, never #000 (halation harms the 30-60%
+ *     with astigmatism); text is dimmed off-white, not #fff.
+ *   - Neutrals carry a whisper of one cool hue (~250-260) so surfaces cohere;
+ *     ONE indigo primary is used sparingly (NN/g 60-30-10) + a restrained teal.
+ *   - Body text targets WCAG AAA (~13:1) WITHOUT maxing the harsh 21:1.
+ *   - Hue choice is a brand call: color psychology is not a reliable lever
+ *     (Elliot 2015) — we optimized for contrast, calm, and distinctiveness.
+ * Every token pair is proven in scripts/contrast-check.mjs (body AAA >=7:1;
+ * text >=4.5:1; non-text UI >=3:1). Layers differentiate by TYPOGRAPHY
+ * (data-layer), not color (WCAG 1.4.1 — never color alone).
  * Tailwind v4: tokens map to utilities via `@theme inline` (inline is REQUIRED
  * so `bg-background` resolves per-element and flips under `.dark`).
  */
@@ -43,6 +54,8 @@
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
   --font-sans: var(--font-bricolage);
   --font-serif: var(--font-newsreader);
@@ -58,51 +71,60 @@
 }
 
 /*
- * Light mode — warm ecru paper, deep terracotta + teal accents.
- * Every text pair clears WCAG AA (body text AAA); rings/fills/input borders
- * clear the 3:1 non-text bar. Ratios verified in scripts/contrast-check.mjs.
+ * Light mode — cool near-white paper, indigo primary, muted teal secondary.
+ * Body text clears WCAG AAA; rings/fills/input borders clear the 3:1 non-text
+ * bar. Every ratio proven in scripts/contrast-check.mjs.
  */
 :root {
-  --background: oklch(0.9531 0.0173 99.60); /* warm ecru paper */
-  --foreground: oklch(0.2663 0.0098 39.32); /* warm near-black ink — 13.4:1 */
+  --background: oklch(0.982 0.004 250); /* cool off-white — NOT #fff (glare); high L keeps the positive-polarity reading edge */
+  --foreground: oklch(0.300 0.012 260); /* cool near-black ink — 12.9:1 (AAA, not the harsh 21:1) */
 
-  --card: oklch(0.9237 0.0217 95.30); /* warm raised surface */
-  --card-foreground: oklch(0.2663 0.0098 39.32);
-  --popover: oklch(0.9575 0.0149 94.20);
-  --popover-foreground: oklch(0.2663 0.0098 39.32);
+  --card: oklch(0.966 0.005 250); /* recessed surface */
+  --card-foreground: oklch(0.300 0.012 260);
+  --popover: oklch(0.988 0.004 250); /* floating surface */
+  --popover-foreground: oklch(0.300 0.012 260);
 
-  --primary: oklch(0.5153 0.1389 35.08); /* deep terracotta — white 5.6:1, as link 5.2:1 */
-  --primary-foreground: oklch(0.9770 0.0114 84.58);
+  --primary: oklch(0.520 0.170 275); /* indigo — white 5.5:1, as link 5.5:1 */
+  --primary-foreground: oklch(0.985 0.004 250);
 
-  --secondary: oklch(0.3902 0.0515 187.75); /* deep teal — white 8.8:1 */
-  --secondary-foreground: oklch(0.9770 0.0114 84.58);
+  --secondary: oklch(0.470 0.070 200); /* muted teal — white 6.3:1 */
+  --secondary-foreground: oklch(0.985 0.004 250);
 
-  --muted: oklch(0.9182 0.0192 93.67);
-  --muted-foreground: oklch(0.4264 0.0099 36.51); /* warm greige — 7.2:1 on paper */
+  --muted: oklch(0.945 0.006 250);
+  --muted-foreground: oklch(0.455 0.012 255); /* cool greige — 6.9:1 on paper */
 
-  --accent: oklch(0.9101 0.0224 89.80); /* subtle warm hover surface */
-  --accent-foreground: oklch(0.2663 0.0098 39.32);
+  --accent: oklch(0.930 0.008 250); /* subtle hover surface */
+  --accent-foreground: oklch(0.300 0.012 260);
 
-  --destructive: oklch(0.5206 0.1582 29.95); /* deep red — white 5.6:1 */
-  --destructive-foreground: oklch(0.9770 0.0114 84.58);
+  --destructive: oklch(0.520 0.165 27); /* red — white 5.7:1 */
+  --destructive-foreground: oklch(0.985 0.004 250);
 
-  --success: oklch(0.4870 0.0842 159.09); /* forest green — white 5.7:1 */
-  --success-foreground: oklch(0.9770 0.0114 84.58);
+  --success: oklch(0.490 0.100 155); /* green — white 5.6:1 */
+  --success-foreground: oklch(0.985 0.004 250);
 
-  --border: oklch(0.8642 0.0268 90.12); /* soft warm divider */
-  --input: oklch(0.5585 0.0290 84.56); /* form-control border — 4.1:1 non-text */
-  --ring: oklch(0.5153 0.1389 35.08);
+  --border: oklch(0.895 0.008 250); /* soft divider (decorative, not a control edge) */
+  --input: oklch(0.560 0.020 255); /* form-control border — 4.4:1 non-text */
+  --ring: oklch(0.520 0.170 275);
 
-  --chart-1: oklch(0.5153 0.1389 35.08); /* terracotta — lexicon accent */
-  --chart-2: oklch(0.4347 0.0569 149.44); /* olive — dsa accent */
-  --chart-3: oklch(0.8642 0.0268 90.12);
+  --chart-1: oklch(0.520 0.170 275); /* indigo — primary */
+  --chart-2: oklch(0.470 0.070 200); /* teal — secondary */
+  --chart-3: oklch(0.700 0.040 250); /* slate */
+  --chart-4: oklch(0.620 0.130 70); /* amber */
+  --chart-5: oklch(0.520 0.120 350); /* rose */
+
+  /* Theme-independent surfaces (constant across light + dark, so defined once). */
+  --code-background: oklch(0.170 0.008 260); /* code stays dark in both modes — editor familiarity + strong build-along cue */
+  --code-foreground: oklch(0.900 0.010 250);
+  --code-line-highlight: oklch(1 0 0 / 0.06); /* white veil — reads on any dark code surface */
+  --code-word-highlight: oklch(1 0 0 / 0.12);
+  --backdrop: oklch(0 0 0 / 0.35); /* modal/dialog scrim */
 
   --radius: 0.625rem;
 
-  --shadow-sm: 0 1px 2px oklch(25% 0.01 70 / 0.04);
-  --shadow-md: 0 4px 12px oklch(25% 0.01 70 / 0.06);
-  --shadow-lg: 0 8px 24px oklch(25% 0.01 70 / 0.08);
-  --shadow-panel: 0 8px 32px oklch(25% 0.01 70 / 0.12);
+  --shadow-sm: 0 1px 2px oklch(0.20 0.01 260 / 0.05);
+  --shadow-md: 0 4px 12px oklch(0.20 0.01 260 / 0.07);
+  --shadow-lg: 0 8px 24px oklch(0.20 0.01 260 / 0.09);
+  --shadow-panel: 0 8px 32px oklch(0.20 0.01 260 / 0.12);
 
   --duration-fast: 100ms;
   --duration-normal: 200ms;
@@ -112,49 +134,52 @@
 }
 
 /*
- * Dark mode — warm espresso surfaces + warm off-white text. Terracotta and
- * teal lighten (Material-3 style) so they carry dark text AND read as accents
- * on the dark base. All pairs AA-verified in scripts/contrast-check.mjs.
+ * Dark mode — elevated cool near-black surfaces + dimmed off-white text (never
+ * #000/#fff — halation). Indigo and teal lighten and shed chroma (Material-3
+ * style) so they carry dark text AND read as accents. AAA-verified in
+ * scripts/contrast-check.mjs.
  */
 .dark {
-  --background: oklch(0.2161 0.0061 56.04); /* warm espresso */
-  --foreground: oklch(0.9127 0.0249 91.62); /* warm off-white — 13.5:1 */
+  --background: oklch(0.185 0.006 260); /* cool near-black — elevated off pure black (halation) */
+  --foreground: oklch(0.885 0.010 250); /* dimmed off-white — 13.2:1 */
 
-  --card: oklch(0.2456 0.0141 81.63);
-  --card-foreground: oklch(0.9127 0.0249 91.62);
-  --popover: oklch(0.2456 0.0141 81.63);
-  --popover-foreground: oklch(0.9127 0.0249 91.62);
+  --card: oklch(0.225 0.008 258); /* elevation expressed via a lighter surface */
+  --card-foreground: oklch(0.885 0.010 250);
+  --popover: oklch(0.235 0.008 258);
+  --popover-foreground: oklch(0.885 0.010 250);
 
-  --primary: oklch(0.7151 0.1182 44.80); /* lightened terracotta — dark text 6.6:1 */
-  --primary-foreground: oklch(0.2161 0.0061 56.04);
+  --primary: oklch(0.720 0.125 278); /* lightened indigo — dark text 7.3:1 */
+  --primary-foreground: oklch(0.185 0.006 260);
 
-  --secondary: oklch(0.6847 0.0639 183.95); /* lightened teal — dark text 6.4:1 */
-  --secondary-foreground: oklch(0.2161 0.0061 56.04);
+  --secondary: oklch(0.680 0.070 200); /* lightened teal — dark text 6.7:1 */
+  --secondary-foreground: oklch(0.185 0.006 260);
 
-  --muted: oklch(0.2456 0.0141 81.63);
-  --muted-foreground: oklch(0.7019 0.0276 84.59); /* 6.6:1 on espresso */
+  --muted: oklch(0.245 0.008 258);
+  --muted-foreground: oklch(0.715 0.015 255); /* 7.4:1 on near-black */
 
-  --accent: oklch(0.2814 0.0139 67.21); /* warm hover surface */
-  --accent-foreground: oklch(0.9127 0.0249 91.62);
+  --accent: oklch(0.270 0.010 258); /* hover surface */
+  --accent-foreground: oklch(0.885 0.010 250);
 
-  --destructive: oklch(0.6498 0.1425 29.39); /* lightened red — dark text 5.1:1 */
-  --destructive-foreground: oklch(0.2161 0.0061 56.04);
+  --destructive: oklch(0.650 0.140 27); /* lightened red — dark text 5.4:1 */
+  --destructive-foreground: oklch(0.185 0.006 260);
 
-  --success: oklch(0.6435 0.0909 157.08); /* lightened green — dark text 5.5:1 */
-  --success-foreground: oklch(0.2161 0.0061 56.04);
+  --success: oklch(0.680 0.090 155); /* lightened green — dark text 6.7:1 */
+  --success-foreground: oklch(0.185 0.006 260);
 
-  --border: oklch(0.3262 0.0157 67.23); /* soft warm divider */
-  --input: oklch(0.5270 0.0262 84.56); /* form-control border — 3.3:1 non-text */
-  --ring: oklch(0.7151 0.1182 44.80);
+  --border: oklch(0.320 0.010 258); /* soft divider */
+  --input: oklch(0.550 0.015 258); /* form-control border — 3.5:1 non-text */
+  --ring: oklch(0.720 0.125 278);
 
-  --chart-1: oklch(0.7151 0.1182 44.80);
-  --chart-2: oklch(0.7118 0.0759 151.05); /* lightened olive — dsa accent */
-  --chart-3: oklch(0.3262 0.0157 67.23);
+  --chart-1: oklch(0.720 0.125 278); /* indigo */
+  --chart-2: oklch(0.680 0.070 200); /* teal */
+  --chart-3: oklch(0.550 0.030 250); /* slate */
+  --chart-4: oklch(0.760 0.120 70); /* amber */
+  --chart-5: oklch(0.700 0.110 350); /* rose */
 
-  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.2);
-  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.3);
-  --shadow-lg: 0 8px 24px oklch(0% 0 0 / 0.4);
-  --shadow-panel: 0 8px 32px oklch(0% 0 0 / 0.5);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.4);
+  --shadow-panel: 0 8px 32px oklch(0 0 0 / 0.5);
 }
 
 @layer base {
@@ -166,6 +191,13 @@
   html {
     scroll-behavior: smooth;
     font-family: var(--font-sans);
+    /* Reserve the scrollbar gutter so locking body scroll (below) doesn't shift
+     * the layout when a modal dialog opens. */
+    scrollbar-gutter: stable;
+    /* WCAG 2.2 §2.4.11 Focus Not Obscured: the site header (h-16) and the
+     * chapter topbar stack to ~112px of sticky chrome. Keep keyboard-focused
+     * elements and :target anchors clear of it when scrolled into view. */
+    scroll-padding-top: 7rem;
   }
 
   body {
@@ -176,12 +208,23 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* A modal <dialog> (term slide-over, chapter nav drawer) renders in the top
+   * layer and makes the page inert, but does NOT lock page scrolling on its own.
+   * Lock it here so opening a panel never loses the reader's place. */
+  body:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   a {
     color: inherit;
     text-decoration: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
     *,
     *::before,
     *::after {

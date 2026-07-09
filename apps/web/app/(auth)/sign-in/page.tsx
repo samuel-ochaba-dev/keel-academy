@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { Wordmark } from '@keelacademy/ui/wordmark'
 import { auth } from '@/auth'
 import { requestMagicLink } from '@/lib/auth-actions'
-import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/ui/submit-button'
 import {
   Card,
   CardContent,
@@ -66,9 +66,9 @@ export default async function SignInPage({
             ) : null}
           </CardContent>
           <CardFooter className="flex-col items-stretch gap-3">
-            <Button type="submit" className="w-full">
+            <SubmitButton className="w-full" pendingText="Sending…">
               Send me a magic link
-            </Button>
+            </SubmitButton>
             <p className="text-center text-xs text-muted-foreground">
               In local dev, the link prints to your terminal — no inbox needed.
             </p>

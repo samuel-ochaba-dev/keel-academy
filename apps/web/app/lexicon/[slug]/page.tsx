@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { lexicon } from '@keelacademy/content/collections'
-import { ArrowLeftIcon } from 'lucide-react'
-import { getLexiconEntry } from '@keelacademy/content/lookup'
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
+import { getChapterForTerm, getLexiconEntry } from '@keelacademy/content/lookup'
 import { MDXContent } from '@/components/mdx-content'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +32,8 @@ export default async function LexiconPage({
   const entry = getLexiconEntry(slug)
   if (!entry) notFound()
 
+  const introChapter = getChapterForTerm(slug)
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -51,6 +53,15 @@ export default async function LexiconPage({
             </h1>
             <p className="text-lg text-muted-foreground">{entry.summary}</p>
           </div>
+          {introChapter ? (
+            <Link
+              href={introChapter.url}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Introduced in Chapter {introChapter.order}: {introChapter.title}
+              <ArrowRightIcon className="size-4" aria-hidden />
+            </Link>
+          ) : null}
           <div data-layer="lexicon" className="mt-8">
             <MDXContent code={entry.body} />
           </div>

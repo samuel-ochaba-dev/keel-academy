@@ -35,17 +35,18 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M2 - Content Pipeline
+**Current Milestone:** M3 - Reading Experience
 
-**Goal:** make content-as-code reliable before building deeper learning flows —
-Velite schemas and validation, MDX components, build-time syntax highlighting,
-and typed content lookup helpers in their own package.
+**Goal:** make the core student reading loop feel real — a persistent
+progress/navigation shell (desktop sidebar + a mobile/tablet drawer), an
+accessible term slide-over that never loses the reader's place, the "Now build
+it" transition, and standalone reference pages that stay connected to the flow.
 
 **Next Actions:**
 
-1. Extend the fixture coverage (more chapters/lexicon/DSA) now that the schemas and components are stable.
-2. Revisit whether build-alongs should join chapters by a typed reference rather than slug convention.
-3. Feed the syntax-highlight token palette (`--shiki-*`) into the OKLCH design tokens if code contrast needs tuning.
+1. Extend fixture coverage (more chapters) so the sidebar and next-chapter path span multiple parts.
+2. Consider a lexicon/DSA index page and search (currently in Backlog) once more entries exist.
+3. Layer richer per-chapter progress (novel-read vs build-started vs complete) when the M4 progress state machine lands.
 
 CI reference: see `docs/ci-plan.md`.
 
@@ -131,7 +132,7 @@ CI reference: see `docs/ci-plan.md`.
 
 ## M2 - Content Pipeline
 
-**Status:** Current
+**Status:** Done
 
 **Goal:** make content as code reliable before building deeper learning flows.
 
@@ -172,27 +173,51 @@ M0 had temporarily deferred), adding build-time Shiki highlighting, and adding t
 
 ## M3 - Reading Experience
 
-**Status:** Planned
+**Status:** Current
 
 **Goal:** make the core student reading loop feel real.
 
 **Build:**
 
-- chapter page layout.
-- persistent progress/navigation shell.
-- inline term buttons.
-- accessible slide-over panel on desktop.
-- mobile full-screen panel behavior.
-- standalone lexicon and DSA pages.
-- "Now build it" chapter transition.
-- reading completion action.
+- chapter page layout. _(done — sidebar + novel measure + build-along, from M0/M2)_
+- persistent progress/navigation shell. _(done — desktop sticky sidebar plus a
+  new `ChapterTopbar`: a sticky course-progress bar under the header, with a
+  `< lg` "Chapters" button that opens the sidebar as a native-`<dialog>` drawer)_
+- inline term buttons. _(done — `Term` + `ConceptChips`, from M0/M2)_
+- accessible slide-over panel on desktop. _(done — native `<dialog>` per RFC-001;
+  M3 hardened it: `aria-labelledby`/`aria-describedby`, deliberate initial focus
+  on the term title, guarded `showModal()`, and a global background scroll-lock
+  so the reader never loses their place)_
+- mobile full-screen panel behavior. _(done — panel becomes a bottom sheet, and
+  the nav drawer slides from the left; both reuse the `@starting-style` pattern)_
+- standalone lexicon and DSA pages. _(done — plus an "Introduced in Chapter N"
+  backlink via the new `getChapterForTerm` helper, keeping the dual-access
+  reference connected to the linear flow)_
+- "Now build it" chapter transition. _(done — divider, subtitle, and a `< lg`
+  "best experienced on a larger screen" notice above the build-along)_
+- reading completion action. _(done — "Mark complete" server action, plus a
+  next-chapter CTA in the completion footer)_
 
 **Exit Criteria:**
 
-- A student can read one chapter without losing context.
-- A term opens and closes without navigation or scroll loss.
-- Keyboard and screen reader basics work for the term panel.
-- The page respects the design system and content layer rules.
+- A student can read one chapter without losing context. _(met — sticky
+  progress shell, next-chapter CTA, and body scroll-lock while a panel is open)_
+- A term opens and closes without navigation or scroll loss. _(met — native
+  `<dialog>` opens in the top layer without navigation; scroll-lock + focus
+  return to the trigger preserve reading position)_
+- Keyboard and screen reader basics work for the term panel. _(met — `showModal()`
+  gives focus trap / Esc / focus return; M3 added the accessible name and
+  deliberate heading focus. An adversarial review also caught two SR gaps, now
+  fixed: `role="img"` on the sidebar status icons so completion state reaches the
+  a11y tree, and `aria-haspopup="dialog"` on the concept chips to match `Term`)_
+- The page respects the design system and content layer rules. _(met — OKLCH
+  tokens only, `data-layer` typography, shadcn primitives incl. `Progress`)_
+
+**Notes:** the mobile nav drawer deliberately reuses the native-`<dialog>`
+approach RFC-001 chose for the term panel rather than introducing a Radix/shadcn
+`Sheet`, keeping one overlay mechanism across the app. Background scroll-lock is
+CSS-only (`body:has(dialog[open]) { overflow: hidden }` + `scrollbar-gutter:
+stable`), since `showModal()` does not lock page scroll on its own.
 
 ---
 

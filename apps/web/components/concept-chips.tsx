@@ -25,8 +25,10 @@ export function ConceptChips({ concepts }: { concepts: ConceptMeta[] }) {
           <button
             key={concept.slug}
             type="button"
+            aria-haspopup="dialog"
             onClick={() => panel?.openTerm(concept.slug)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            // py-1.5 keeps the hit target >=24px tall (WCAG 2.2 §2.5.8).
+            className="inline-flex min-h-6 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <span
               aria-hidden

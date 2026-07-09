@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 // Route-segment error boundary. Must be a Client Component; `reset()` re-renders
 // the segment. Error reporting (Sentry) is wired in M8 — for now we log.
@@ -28,7 +30,12 @@ export default function Error({
           happening, the problem is on our end.
         </p>
       </div>
-      <Button onClick={reset}>Try again</Button>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Button onClick={reset}>Try again</Button>
+        <Link href="/" className={cn(buttonVariants({ variant: 'outline' }))}>
+          Go home
+        </Link>
+      </div>
     </main>
   )
 }

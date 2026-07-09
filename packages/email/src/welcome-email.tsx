@@ -17,12 +17,13 @@ export type WelcomeEmailProps = {
   chapterUrl: string
 }
 
-// Brand tokens mirrored from docs/design-system.md. Email clients cannot read
-// CSS variables, so the coral + cream are inlined here on purpose.
-const coral = '#f76f53'
-const cream = '#f2f0e3'
-const charcoal = '#2e2e2e'
-const muted = '#7a7a72'
+// Brand tokens mirrored from the "cool slate + indigo" palette. Email clients
+// cannot read CSS variables, so the hex is inlined here on purpose — keep it in
+// sync with apps/web/app/globals.css :root.
+const indigo = '#505ac8' // --primary          oklch(0.520 0.170 275)
+const paper = '#f7f9fc' // --background        oklch(0.982 0.004 250)
+const ink = '#2a2e34' // --foreground        oklch(0.300 0.012 260)
+const muted = '#52575d' // --muted-foreground  oklch(0.455 0.012 255)
 
 export function WelcomeEmail({ name, chapterTitle, chapterUrl }: WelcomeEmailProps) {
   return (
@@ -31,7 +32,7 @@ export function WelcomeEmail({ name, chapterTitle, chapterUrl }: WelcomeEmailPro
       <Preview>Your first Keelacademy chapter is ready.</Preview>
       <Body
         style={{
-          backgroundColor: cream,
+          backgroundColor: paper,
           fontFamily: 'Georgia, "Times New Roman", serif',
           margin: 0,
           padding: '32px 0',
@@ -47,18 +48,18 @@ export function WelcomeEmail({ name, chapterTitle, chapterUrl }: WelcomeEmailPro
           }}
         >
           <Section>
-            <Heading style={{ margin: '0 0 8px', color: charcoal, fontSize: '24px' }}>
+            <Heading style={{ margin: '0 0 8px', color: ink, fontSize: '24px' }}>
               Welcome to Keelacademy, {name}.
             </Heading>
             <Text style={{ color: muted, lineHeight: 1.7, fontSize: '16px' }}>
               You can make things work. This is where you learn to make them hold.
-              Start with <strong style={{ color: charcoal }}>{chapterTitle}</strong>,
+              Start with <strong style={{ color: ink }}>{chapterTitle}</strong>,
               then return to your dashboard to confirm your progress was saved.
             </Text>
             <Button
               href={chapterUrl}
               style={{
-                backgroundColor: coral,
+                backgroundColor: indigo,
                 color: '#ffffff',
                 padding: '14px 22px',
                 borderRadius: '10px',

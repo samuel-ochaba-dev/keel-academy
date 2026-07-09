@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ArrowRightIcon, CheckIcon, MonitorIcon } from 'lucide-react'
 import { auth } from '@/auth'
 import {
   getBuildAlong,
@@ -15,13 +16,17 @@ import {
 } from '@/lib/progress/service'
 import type { ChapterStatus } from '@/lib/db/schema'
 import { completeChapterAction } from './actions'
-import { ChapterSidebar } from '@/components/chapter-sidebar'
+import { ChapterSidebar, type NavChapter } from '@/components/chapter-sidebar'
+import { ChapterTopbar } from '@/components/chapter-topbar'
 import { ConceptChips } from '@/components/concept-chips'
 import { MDXContent } from '@/components/mdx-content'
+import { ReadingProgress } from '@/components/reading-progress'
 import { SiteHeader } from '@/components/site-header'
 import { TermPanelProvider, type TermEntry } from '@/components/term-panel'
+import { siteConfig } from '@/lib/site'
 import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
+import { SubmitButton } from '@/components/ui/submit-button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 
@@ -70,8 +75,23 @@ export default async function ChapterPage({
   const entries = getChapterEntries(chapter)
   const buildAlong = getBuildAlong(slug)
 
+  // Trim to the nav shape so the client drawer never serializes MDX bodies.
+  const navChapters: NavChapter[] = chapters.map((entry) => ({
+    slug: entry.slug,
+    title: entry.title,
+    order: entry.order,
+    part: entry.part,
+    url: entry.url,
+  }))
+  const currentIndex = chapters.findIndex((entry) => entry.slug === slug)
+  const nextChapter =
+    currentIndex >= 0 ? (chapters[currentIndex + 1] ?? null) : null
+
   const statusBySlug: Record<string, ChapterStatus> = {}
   for (const row of progressRows) statusBySlug[row.chapterSlug] = row.status
+  const completedCount = progressRows.filter(
+    (row) => row.status === 'complete',
+  ).length
 
   const termEntries: TermEntry[] = entries.map((entry) => ({
     slug: entry.slug,
@@ -89,14 +109,23 @@ export default async function ChapterPage({
 
   return (
     <div className="min-h-screen">
+      <ReadingProgress />
       <SiteHeader />
+      <ChapterTopbar
+        chapters={navChapters}
+        currentSlug={slug}
+        statusBySlug={statusBySlug}
+        completedCount={completedCount}
+        totalPlanned={siteConfig.totalChaptersPlanned}
+      />
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-10 md:px-10 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="hidden lg:block">
-          <div className="sticky top-24">
+          <div className="sticky top-28">
             <ChapterSidebar
-              chapters={chapters}
+              chapters={navChapters}
               currentSlug={slug}
               statusBySlug={statusBySlug}
+              totalPlanned={siteConfig.totalChaptersPlanned}
             />
           </div>
         </aside>
@@ -139,6 +168,22 @@ export default async function ChapterPage({
                     </span>
                     <Separator className="flex-1" />
                   </div>
+                  <p className="mt-4 text-center text-sm text-muted-foreground">
+                    Here is what the senior asked the junior to produce. Now it&rsquo;s
+                    your turn.
+                  </p>
+
+                  <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground lg:hidden">
+                    <MonitorIcon
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                      aria-hidden
+                    />
+                    <p>
+                      This section involves coding. It&rsquo;s best experienced on a
+                      larger screen.
+                    </p>
+                  </div>
+
                   <div
                     data-layer="build-along"
                     className="mt-8 rounded-xl border border-border bg-card p-6 md:p-8"
@@ -152,29 +197,41 @@ export default async function ChapterPage({
             <div className="mx-auto mt-14 max-w-[75ch]">
               <Separator />
               <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="font-heading text-lg font-semibold">
-                    {status === 'complete'
-                      ? 'Chapter complete'
-                      : 'Finished reading?'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {userId
-                      ? 'Your progress is saved to your account.'
-                      : 'Sign in to save your progress across sessions.'}
-                  </p>
+                <div className="flex items-start gap-3">
+                  {status === 'complete' ? (
+                    <span
+                      className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-success/15"
+                      aria-hidden
+                    >
+                      <CheckIcon className="size-4 [color:var(--color-success)]" />
+                    </span>
+                  ) : null}
+                  <div>
+                    <p className="font-heading text-lg font-semibold">
+                      {status === 'complete'
+                        ? 'Chapter complete'
+                        : 'Finished reading?'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {status === 'complete'
+                        ? 'Nice work — your progress is saved. Keep the momentum going.'
+                        : userId
+                          ? 'Mark it done to track your progress.'
+                          : 'Sign in to save your progress across sessions.'}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {userId ? (
                     <form
                       action={completeChapterAction.bind(null, chapter.slug)}
                     >
-                      <Button
-                        type="submit"
+                      <SubmitButton
                         variant={status === 'complete' ? 'outline' : 'default'}
+                        pendingText="Saving…"
                       >
                         {status === 'complete' ? 'Completed' : 'Mark complete'}
-                      </Button>
+                      </SubmitButton>
                     </form>
                   ) : (
                     <Link
@@ -184,12 +241,26 @@ export default async function ChapterPage({
                       Sign in to save progress
                     </Link>
                   )}
-                  <Link
-                    href="/dashboard"
-                    className={cn(buttonVariants({ variant: 'outline' }))}
-                  >
-                    Dashboard
-                  </Link>
+                  {nextChapter ? (
+                    <Link
+                      href={nextChapter.url}
+                      className={cn(
+                        buttonVariants({
+                          variant: status === 'complete' ? 'default' : 'outline',
+                        }),
+                      )}
+                    >
+                      Next: {nextChapter.title}
+                      <ArrowRightIcon className="size-4" aria-hidden />
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/dashboard"
+                      className={cn(buttonVariants({ variant: 'outline' }))}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

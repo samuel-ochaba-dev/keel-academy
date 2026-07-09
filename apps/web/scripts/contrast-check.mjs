@@ -79,36 +79,36 @@ function grade(r, kind) {
 
 // The shipped tokens (app/globals.css). Single source for the built-in matrix.
 const LIGHT = {
-  background: 'oklch(0.9531 0.0173 99.60)',
-  foreground: 'oklch(0.2663 0.0098 39.32)',
-  card: 'oklch(0.9237 0.0217 95.30)',
-  primary: 'oklch(0.5153 0.1389 35.08)',
-  'primary-foreground': 'oklch(0.9770 0.0114 84.58)',
-  secondary: 'oklch(0.3902 0.0515 187.75)',
-  'secondary-foreground': 'oklch(0.9770 0.0114 84.58)',
-  'muted-foreground': 'oklch(0.4264 0.0099 36.51)',
-  destructive: 'oklch(0.5206 0.1582 29.95)',
-  'destructive-foreground': 'oklch(0.9770 0.0114 84.58)',
-  success: 'oklch(0.4870 0.0842 159.09)',
-  'success-foreground': 'oklch(0.9770 0.0114 84.58)',
-  input: 'oklch(0.5585 0.0290 84.56)',
-  ring: 'oklch(0.5153 0.1389 35.08)',
+  background: 'oklch(0.982 0.004 250)',
+  foreground: 'oklch(0.300 0.012 260)',
+  card: 'oklch(0.966 0.005 250)',
+  primary: 'oklch(0.520 0.170 275)',
+  'primary-foreground': 'oklch(0.985 0.004 250)',
+  secondary: 'oklch(0.470 0.070 200)',
+  'secondary-foreground': 'oklch(0.985 0.004 250)',
+  'muted-foreground': 'oklch(0.455 0.012 255)',
+  destructive: 'oklch(0.520 0.165 27)',
+  'destructive-foreground': 'oklch(0.985 0.004 250)',
+  success: 'oklch(0.490 0.100 155)',
+  'success-foreground': 'oklch(0.985 0.004 250)',
+  input: 'oklch(0.560 0.020 255)',
+  ring: 'oklch(0.520 0.170 275)',
 }
 const DARK = {
-  background: 'oklch(0.2161 0.0061 56.04)',
-  foreground: 'oklch(0.9127 0.0249 91.62)',
-  card: 'oklch(0.2456 0.0141 81.63)',
-  primary: 'oklch(0.7151 0.1182 44.80)',
-  'primary-foreground': 'oklch(0.2161 0.0061 56.04)',
-  secondary: 'oklch(0.6847 0.0639 183.95)',
-  'secondary-foreground': 'oklch(0.2161 0.0061 56.04)',
-  'muted-foreground': 'oklch(0.7019 0.0276 84.59)',
-  destructive: 'oklch(0.6498 0.1425 29.39)',
-  'destructive-foreground': 'oklch(0.2161 0.0061 56.04)',
-  success: 'oklch(0.6435 0.0909 157.08)',
-  'success-foreground': 'oklch(0.2161 0.0061 56.04)',
-  input: 'oklch(0.5270 0.0262 84.56)',
-  ring: 'oklch(0.7151 0.1182 44.80)',
+  background: 'oklch(0.185 0.006 260)',
+  foreground: 'oklch(0.885 0.010 250)',
+  card: 'oklch(0.225 0.008 258)',
+  primary: 'oklch(0.720 0.125 278)',
+  'primary-foreground': 'oklch(0.185 0.006 260)',
+  secondary: 'oklch(0.680 0.070 200)',
+  'secondary-foreground': 'oklch(0.185 0.006 260)',
+  'muted-foreground': 'oklch(0.715 0.015 255)',
+  destructive: 'oklch(0.650 0.140 27)',
+  'destructive-foreground': 'oklch(0.185 0.006 260)',
+  success: 'oklch(0.680 0.090 155)',
+  'success-foreground': 'oklch(0.185 0.006 260)',
+  input: 'oklch(0.550 0.015 258)',
+  ring: 'oklch(0.720 0.125 278)',
 }
 
 // [label, fgToken, bgToken, kind]
@@ -174,3 +174,4 @@ if (args.length === 0) {
     console.log(`${label.padEnd(30)} ${fg} on ${bg}  ${r.toFixed(2)}:1  ${grade(r, kind)}`)
   }
 }
+

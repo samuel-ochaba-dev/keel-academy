@@ -1,15 +1,14 @@
 # Keelacademy Design System
 
-# Keelacademy Design System
-The visual language for the Keelacademy learning platform. Warm, restrained, reading-first. Inspired by Zen Browser's calm warmth and Leerob's focused minimalism, built on shadcn/ui's token architecture.
+The visual language for the Keelacademy learning platform. Calm, restrained, reading-first. A cool near-neutral surface with a single indigo accent, built on shadcn/ui's token architecture. Every color is grounded in reading-ergonomics and accessibility research — the full rationale and citations live in `apps/web/app/globals.css`, and every pair is proven in `apps/web/scripts/contrast-check.mjs`.
 
 * * *
 ## Principles
 1. **Reading is the product.** Every decision optimizes for sustained, focused reading. The novel is 3,000-8,000 words per chapter. Typography is not decorative; it's structural.
-2. **Warmth over sterility.** No pure black, no pure white. Warm undertones throughout (cream backgrounds, charcoal text). The platform should feel like a well-made book, not a code editor.
-3. **One accent, used sparingly.** A single coral accent color for progress, CTAs, and active states. Everything else is neutrals. Restraint creates clarity.
-4. **Content types shift subtly, not loudly.** The four layers (novel, build-along, lexicon, DSA) differentiate through typography and spacing, not garish background color changes.
-5. **Dark mode is native, not an afterthought.** Both modes designed simultaneously. Dark mode preserves the warm undertone (warm charcoal, not blue-gray).
+2. **Calm neutrals, never pure black/white.** The reading surface is a cool near-white (light) or an elevated near-black (dark) — never `#fff` or `#000`. High light-mode luminance sharpens focus (the positive-polarity reading advantage; Piepenbrock/Buchner), while easing off the extremes cuts glare and halation (BDA; Material). Neutrals carry a whisper of one cool hue (~250–260) so every surface feels of a piece.
+3. **One accent, used sparingly.** A single indigo primary for progress, CTAs, links, and active states, plus a restrained teal secondary. Everything else is neutral (NN/g's 60-30-10). Restraint creates clarity — and because color psychology is not a reliable lever (Elliot 2015), the accent is chosen for contrast and distinctiveness, not folklore.
+4. **Content types shift subtly, not loudly.** The four layers (novel, build-along, lexicon, DSA) differentiate through typography and spacing, never by color alone (WCAG 1.4.1) — no garish background color changes.
+5. **Dark mode is native, not an afterthought.** Both modes are designed and contrast-verified simultaneously and shipped first-class. Dark mode is a cool, elevated near-black (never pure black) with dimmed off-white text (never pure white) to avoid halation.
 
 * * *
 ## Color Tokens
@@ -18,48 +17,40 @@ All colors defined as OKLCH values in `globals.css`. Mapped to Tailwind utilitie
 
 ```css
 :root {
-  /* Backgrounds */
-  --background: 97% 0.01 85;           /* #f2f0e3 warm cream */
-  --foreground: 25% 0.01 70;           /* #2e2e2e soft charcoal */
+  /* Surfaces — cool near-white, never #fff */
+  --background: oklch(0.982 0.004 250);         /* cool off-white paper */
+  --foreground: oklch(0.300 0.012 260);         /* cool near-black ink — 12.9:1 (AAA) */
+  --card: oklch(0.966 0.005 250);               /* recessed surface */
+  --card-foreground: oklch(0.300 0.012 260);
+  --popover: oklch(0.988 0.004 250);            /* floating surface */
+  --popover-foreground: oklch(0.300 0.012 260);
 
-  /* Surfaces */
-  --card: 95% 0.01 85;                 /* #ebe9dc slightly darker cream */
-  --card-foreground: 25% 0.01 70;      /* same charcoal */
-  --popover: 97% 0.01 85;              /* matches background */
-  --popover-foreground: 25% 0.01 70;
+  /* Primary: Indigo */
+  --primary: oklch(0.520 0.170 275);            /* 5.5:1 as link/CTA */
+  --primary-foreground: oklch(0.985 0.004 250);
 
-  /* Primary: Coral Ember */
-  --primary: 62% 0.18 25;              /* #f76f53 coral */
-  --primary-foreground: 99% 0.005 85;  /* white-cream on coral */
+  /* Secondary: Muted teal */
+  --secondary: oklch(0.470 0.070 200);
+  --secondary-foreground: oklch(0.985 0.004 250);
 
-  /* Secondary: Muted Parchment */
-  --secondary: 93% 0.01 85;            /* #e8e6d6 parchment */
-  --secondary-foreground: 30% 0.01 70; /* dark charcoal */
+  /* Muted + hover accent surfaces */
+  --muted: oklch(0.945 0.006 250);
+  --muted-foreground: oklch(0.455 0.012 255);   /* 6.9:1 */
+  --accent: oklch(0.930 0.008 250);
+  --accent-foreground: oklch(0.300 0.012 260);
 
-  /* Muted: Subdued text and backgrounds */
-  --muted: 93% 0.01 85;                /* #e8e6d6 */
-  --muted-foreground: 55% 0.01 70;     /* #7a7a72 medium gray */
+  /* Status */
+  --destructive: oklch(0.520 0.165 27);
+  --destructive-foreground: oklch(0.985 0.004 250);
+  --success: oklch(0.490 0.100 155);
+  --success-foreground: oklch(0.985 0.004 250);
 
-  /* Accent: Soft coral for hover states */
-  --accent: 90% 0.06 25;               /* #fbcabf soft coral tint */
-  --accent-foreground: 25% 0.01 70;
+  /* Lines + focus */
+  --border: oklch(0.895 0.008 250);             /* soft divider */
+  --input: oklch(0.560 0.020 255);              /* control border — 4.4:1 */
+  --ring: oklch(0.520 0.170 275);
 
-  /* Destructive */
-  --destructive: 55% 0.22 29;          /* #dc2626 red */
-  --destructive-foreground: 99% 0.005 85;
-
-  /* Borders and inputs */
-  --border: 88% 0.01 85;               /* #dcdacb warm border */
-  --input: 88% 0.01 85;
-  --ring: 62% 0.18 25;                  /* coral focus ring */
-
-  /* Chart colors (progress visualization) */
-  --chart-1: 62% 0.18 25;              /* coral: completed */
-  --chart-2: 75% 0.10 145;             /* sage: in progress */
-  --chart-3: 88% 0.01 85;              /* parchment: locked */
-
-  /* Radius */
-  --radius: 0.625rem;                  /* 10px - slightly rounded, never pill */
+  --radius: 0.625rem;                           /* 10px — slightly rounded, never pill */
 }
 ```
 
@@ -67,45 +58,33 @@ All colors defined as OKLCH values in `globals.css`. Mapped to Tailwind utilitie
 
 ```css
 .dark {
-  /* Backgrounds: warm charcoal, never blue-gray */
-  --background: 15% 0.01 70;           /* #1a1a18 warm black */
-  --foreground: 92% 0.01 85;           /* #f0ede3 warm off-white */
+  /* Surfaces — elevated cool near-black, never #000 */
+  --background: oklch(0.185 0.006 260);
+  --foreground: oklch(0.885 0.010 250);         /* dimmed off-white — 13.2:1 (AAA) */
+  --card: oklch(0.225 0.008 258);               /* elevation via a lighter surface */
+  --card-foreground: oklch(0.885 0.010 250);
+  --popover: oklch(0.235 0.008 258);
+  --popover-foreground: oklch(0.885 0.010 250);
 
-  /* Surfaces */
-  --card: 18% 0.01 70;                 /* #222220 elevated surface */
-  --card-foreground: 92% 0.01 85;
-  --popover: 18% 0.01 70;
-  --popover-foreground: 92% 0.01 85;
+  /* Indigo + teal lighten and shed chroma on dark */
+  --primary: oklch(0.720 0.125 278);            /* 7.3:1 */
+  --primary-foreground: oklch(0.185 0.006 260);
+  --secondary: oklch(0.680 0.070 200);
+  --secondary-foreground: oklch(0.185 0.006 260);
 
-  /* Primary: Coral stays vibrant */
-  --primary: 65% 0.18 25;              /* slightly brighter coral on dark */
-  --primary-foreground: 15% 0.01 70;   /* dark text on coral */
+  --muted: oklch(0.245 0.008 258);
+  --muted-foreground: oklch(0.715 0.015 255);   /* 7.4:1 */
+  --accent: oklch(0.270 0.010 258);
+  --accent-foreground: oklch(0.885 0.010 250);
 
-  /* Secondary */
-  --secondary: 22% 0.01 70;            /* #2a2a26 warm dark surface */
-  --secondary-foreground: 88% 0.01 85;
+  --destructive: oklch(0.650 0.140 27);
+  --destructive-foreground: oklch(0.185 0.006 260);
+  --success: oklch(0.680 0.090 155);
+  --success-foreground: oklch(0.185 0.006 260);
 
-  /* Muted */
-  --muted: 22% 0.01 70;                /* #2a2a26 */
-  --muted-foreground: 60% 0.01 70;     /* #8a8a82 */
-
-  /* Accent */
-  --accent: 25% 0.04 25;               /* dark coral tint */
-  --accent-foreground: 92% 0.01 85;
-
-  /* Destructive */
-  --destructive: 55% 0.22 29;
-  --destructive-foreground: 99% 0.005 85;
-
-  /* Borders */
-  --border: 25% 0.01 70;               /* #333330 subtle warm border */
-  --input: 25% 0.01 70;
-  --ring: 65% 0.18 25;
-
-  /* Charts */
-  --chart-1: 65% 0.18 25;
-  --chart-2: 70% 0.10 145;
-  --chart-3: 25% 0.01 70;
+  --border: oklch(0.320 0.010 258);
+  --input: oklch(0.550 0.015 258);              /* control border — 3.5:1 */
+  --ring: oklch(0.720 0.125 278);
 }
 ```
 
@@ -113,15 +92,15 @@ All colors defined as OKLCH values in `globals.css`. Mapped to Tailwind utilitie
 
 | Name | Light | Dark | Usage |
 | ---| ---| ---| --- |
-| Cream | `#f2f0e3` | — | Page background |
-| Charcoal | `#2e2e2e` | — | Body text |
-| Warm Black | — | `#1a1a18` | Page background (dark) |
-| Off-White | — | `#f0ede3` | Body text (dark) |
-| Coral Ember | `#f76f53` | `#f87f65` | Primary accent, CTAs, progress, links |
-| Parchment | `#e8e6d6` | `#2a2a26` | Cards, panels, secondary surfaces |
-| Soft Coral | `#fbcabf` | `#3a2520` | Hover states, highlights |
-| Medium Gray | `#7a7a72` | `#8a8a82` | Muted text, timestamps, metadata |
-| Border | `#dcdacb` | `#333330` | Dividers, input borders |
+| Cool Paper | `oklch(0.982 0.004 250)` | — | Page background |
+| Slate Ink | `oklch(0.300 0.012 260)` | — | Body text |
+| Deep Slate | — | `oklch(0.185 0.006 260)` | Page background (dark) |
+| Off-White | — | `oklch(0.885 0.010 250)` | Body text (dark) |
+| Indigo | `oklch(0.520 0.170 275)` | `oklch(0.720 0.125 278)` | Primary accent, CTAs, progress, links |
+| Teal | `oklch(0.470 0.070 200)` | `oklch(0.680 0.070 200)` | Secondary accent |
+| Card | `oklch(0.966 0.005 250)` | `oklch(0.225 0.008 258)` | Cards, panels, secondary surfaces |
+| Muted Text | `oklch(0.455 0.012 255)` | `oklch(0.715 0.015 255)` | Muted text, timestamps, metadata |
+| Border | `oklch(0.895 0.008 250)` | `oklch(0.320 0.010 258)` | Soft dividers (`--input` is the control edge) |
 
 * * *
 ## Typography
@@ -255,28 +234,28 @@ Built on shadcn/ui components. Customized via the token system, not by overridin
 
 | Variant | Usage | Style |
 | ---| ---| --- |
-| `default` | Primary CTAs ("Start Chapter", "Submit") | Coral background, cream text |
-| `secondary` | Secondary actions ("View Reference") | Parchment background, charcoal text |
-| `outline` | Tertiary actions ("Share", "Copy") | Border only, charcoal text |
-| `ghost` | Navigation, minimal actions | No background, coral on hover |
+| `default` | Primary CTAs ("Start Chapter", "Submit") | Indigo background, near-white text |
+| `secondary` | Secondary actions ("View Reference") | Teal background, near-white text |
+| `outline` | Tertiary actions ("Share", "Copy") | Border only, ink text |
+| `ghost` | Navigation, minimal actions | No background, indigo on hover |
 | `destructive` | Dangerous actions ("Reset Progress") | Red background |
 
 ### Cards
 
 | Variant | Usage | Style |
 | ---| ---| --- |
-| `default` | Lexicon entries, chapter cards | Parchment background, warm border, rounded |
-| `elevated` | Active chapter, current progress | Cream background, subtle shadow, coral left-border |
+| `default` | Lexicon entries, chapter cards | Card surface, soft border, rounded |
+| `elevated` | Active chapter, current progress | Popover surface, subtle shadow, indigo left-border |
 | `code` | Code blocks in build-along | Dark background (both modes), monospace |
 
 ### Badge
 
 | Variant | Usage |
 | ---| --- |
-| `default` | Chapter state (coral for active) |
+| `default` | Chapter state (indigo for active) |
 | `secondary` | Metadata tags |
 | `outline` | Part labels |
-| `success` | Completed state (sage green) |
+| `success` | Completed state (green) |
 | `locked` | Locked chapters (muted) |
 
 * * *
@@ -286,7 +265,7 @@ Each layer is identified by a `data-layer` attribute on its container. This trig
 *   Font: Newsreader (serif)
 *   Size: 18px, line-height 1.8
 *   Measure: 65ch
-*   Background: page background (cream/warm-black)
+*   Background: page background (cool paper / near-black)
 *   Feel: **Book. Quiet. Immersive.**
 ### Build-Along Layer (`data-layer="build-along"`)
 *   Font: Geist Sans
@@ -299,7 +278,7 @@ Each layer is identified by a `data-layer` attribute on its container. This trig
 *   Font: Geist Sans
 *   Size: 15px, line-height 1.6
 *   Contained in slide-over panel (420px)
-*   Background: card surface with subtle left border (coral)
+*   Background: card surface with subtle left border (indigo)
 *   Structure: Term title → definition → when to use → when not to → common mistake
 *   Feel: **Reference card. Scannable. Quick.**
 ### DSA Layer (`data-layer="dsa"`)
@@ -307,7 +286,7 @@ Each layer is identified by a `data-layer` attribute on its container. This trig
 *   Size: 15px, line-height 1.6
 *   Contained in slide-over panel (420px)
 *   Includes: complexity tables, annotated code, diagrams
-*   Background: card surface with subtle left border (sage green)
+*   Background: card surface with subtle left border (teal)
 *   Feel: **Textbook margin. Dense but clear.**
 
 * * *
@@ -319,7 +298,7 @@ Inline terms in the novel that link to lexicon/DSA entries:
 [data-term] {
   color: var(--foreground);             /* same as body text */
   text-decoration: underline;
-  text-decoration-color: oklch(var(--primary) / 0.4);  /* coral underline, 40% opacity */
+  text-decoration-color: oklch(var(--primary) / 0.4);  /* indigo underline, 40% opacity */
   text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -327,7 +306,7 @@ Inline terms in the novel that link to lexicon/DSA entries:
 }
 
 [data-term]:hover {
-  text-decoration-color: oklch(var(--primary));  /* full coral on hover */
+  text-decoration-color: oklch(var(--primary));  /* full indigo on hover */
 }
 
 [data-term]:focus-visible {
@@ -352,7 +331,7 @@ Inline terms in the novel that link to lexicon/DSA entries:
 | Reading | `◐` (half circle) | `primary` |
 | Building | `▶` (play) | `primary` |
 | Unlocked | `◉` (filled ring) | `primary` |
-| Complete | `✓` (check) | sage green `oklch(75% 0.10 145)` |
+| Complete | `✓` (check) | green `var(--success)` |
 
 ### Progress Bar
 
@@ -399,7 +378,7 @@ Code blocks use a consistent dark theme regardless of light/dark mode (matches d
 
 * * *
 ## Shadows & Elevation
-Minimal shadows. Zen's approach: let spacing and subtle borders do the work. Shadows only for floating elements.
+Minimal shadows: let spacing and subtle borders do the work. Shadows only for floating elements.
 
 ```css
 :root {
@@ -584,10 +563,10 @@ Theme toggle in top bar. Three states: Light, Dark, System. Default to system pr
 
 * * *
 ## Accessibility Checklist
-- [x] All text meets WCAG 2.1 AA contrast (4.5:1 body, 3:1 large)
-- [x] Coral accent on cream: 3.8:1 (large text only, never used for small body text)
-- [x] Coral accent on dark: 5.2:1 (passes for all sizes)
-- [x] Focus ring visible on all interactive elements (coral, 2px offset)
+- [x] All body text meets WCAG 2.1 AAA (≥7:1) in both modes; every text pair ≥4.5:1 AA — proven in `apps/web/scripts/contrast-check.mjs`
+- [x] Indigo primary on paper: 5.5:1 (passes AA at all text sizes; used for links/CTAs)
+- [x] Indigo primary on dark: 7.3:1 (AAA)
+- [x] Focus ring visible on all interactive elements (indigo, 2px offset)
 - [x] No information conveyed by color alone (progress uses icons + color)
 - [x] Reduced motion respected globally
 - [x] Minimum touch target 44x44px on mobile
@@ -597,8 +576,8 @@ Theme toggle in top bar. Three states: Light, Dark, System. Default to system pr
 
 | Decision | Choice | Why |
 | ---| ---| --- |
-| Warm undertone throughout | Yes | Zen Browser influence. Reduces eye strain for long reading sessions. Pure white/black is harsh. |
-| Single accent color | Coral `#f76f53` | One color = zero decision fatigue. Coral is warm (matches cream palette), energetic (progress feels earned), and distinctive (not the default blue every other app uses). |
+| Cool near-neutral surface | Yes | Replaces the earlier warm, Zen-derived paper. High light-mode luminance aids the positive-polarity reading advantage (Piepenbrock/Buchner); easing off pure white/black avoids glare + halation (BDA, Material). Proven AAA in `apps/web/scripts/contrast-check.mjs`. |
+| Single accent color | Indigo `oklch(0.520 0.170 275)` | One accent = zero decision fatigue (NN/g 60-30-10). Indigo reads calm and is clearly distinct from the terracotta/coral we left; chosen for contrast + distinctiveness, since color psychology is not a reliable lever (Elliot 2015). |
 | Serif for novel only | Newsreader | Signals "you are reading a story" without making the whole app feel old-fashioned. UI stays modern (Geist). The contrast between layers creates orientation. |
 | Code blocks always dark | Yes | Developers expect dark code blocks. Matching their editor reduces cognitive switching. Also creates strong visual differentiation for the build-along layer. |
 | No custom icon set | Lucide | Not worth the effort. Lucide is comprehensive, consistent, and what shadcn uses. Thinner stroke (1.75) softens them to match the warm aesthetic. |

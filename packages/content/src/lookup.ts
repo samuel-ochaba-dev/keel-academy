@@ -49,3 +49,17 @@ export function getChapterEntries(chapter: Chapter): ReferenceEntry[] {
     .filter((entry): entry is DsaEntry => entry !== null)
   return [...lex, ...dsaEntries]
 }
+
+/**
+ * The chapter that introduces a given lexicon/DSA term, in reading order.
+ * Powers the "Introduced in ..." backlink on standalone reference pages so the
+ * dual-access reference stays connected to the linear reading flow.
+ */
+export function getChapterForTerm(termSlug: string): Chapter | null {
+  return (
+    listChapters().find(
+      (chapter) =>
+        chapter.lexicon.includes(termSlug) || chapter.dsa.includes(termSlug),
+    ) ?? null
+  )
+}

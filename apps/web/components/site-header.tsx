@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { Wordmark } from '@keelacademy/ui/wordmark'
 import { auth } from '@/auth'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
+import { SubmitButton } from '@/components/ui/submit-button'
 import { signOutAction } from '@/lib/auth-actions'
 import { cn } from '@/lib/utils'
 
@@ -26,9 +27,9 @@ export async function SiteHeader() {
                 Dashboard
               </Link>
               <form action={signOutAction}>
-                <Button variant="outline" size="sm" type="submit">
+                <SubmitButton variant="outline" size="sm" pendingText="Signing out…">
                   Sign out
-                </Button>
+                </SubmitButton>
               </form>
             </>
           ) : (
