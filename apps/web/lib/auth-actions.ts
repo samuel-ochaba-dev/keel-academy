@@ -8,6 +8,21 @@ export async function signOutAction() {
   await signOut({ redirectTo: '/' })
 }
 
+export async function signInWithGitHub(formData: FormData) {
+  const next = String(formData.get('next') ?? '/dashboard') || '/dashboard'
+
+  try {
+    // Redirects to GitHub's authorize URL; the callback returns the user to
+    // `next`. A successful signIn throws NEXT_REDIRECT, which must propagate.
+    await signIn('github', { redirectTo: next })
+  } catch (error) {
+    if (error instanceof AuthError) {
+      redirect('/sign-in?error=oauth-failed')
+    }
+    throw error
+  }
+}
+
 export async function requestMagicLink(formData: FormData) {
   const email = String(formData.get('email') ?? '')
     .trim()

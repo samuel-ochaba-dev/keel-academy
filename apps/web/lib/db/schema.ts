@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+  index,
   integer,
   primaryKey,
   sqliteTable,
@@ -99,3 +100,40 @@ export const chapterProgress = sqliteTable(
 
 export type ChapterProgressRow = typeof chapterProgress.$inferSelect
 export type ChapterStatus = ChapterProgressRow['status']
+
+// Append-only audit log of progress *transitions* (from !== to). Written by the
+// progress service inside the same transaction as the status change, so the
+// history of how a user moved through a chapter is durable and inspectable
+// (M8 observability builds on this). Plain visits that don't change status are
+// deliberately not recorded here — that firehose is a later analytics concern.
+export const progressEvents = sqliteTable(
+  'progress_event',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    chapterSlug: text('chapter_slug').notNull(),
+    event: text('event', { enum: ['visit', 'complete'] }).notNull(),
+    fromStatus: text('from_status', {
+      enum: ['not_started', 'reading', 'complete'],
+    }).notNull(),
+    toStatus: text('to_status', {
+      enum: ['not_started', 'reading', 'complete'],
+    }).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => [
+    index('progress_event_user_idx').on(table.userId),
+    index('progress_event_user_chapter_idx').on(
+      table.userId,
+      table.chapterSlug,
+    ),
+  ],
+)
+
+export type ProgressEventRow = typeof progressEvents.$inferSelect

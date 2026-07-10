@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     '@keelacademy/content',
     '@keelacademy/ui',
+    '@keelacademy/email',
     '@t3-oss/env-nextjs',
     '@t3-oss/env-core',
   ],

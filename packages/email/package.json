@@ -5,7 +5,8 @@
   "type": "module",
   "license": "UNLICENSED",
   "exports": {
-    "./welcome-email": "./src/welcome-email.tsx"
+    "./welcome-email": "./src/welcome-email.tsx",
+    "./magic-link-email": "./src/magic-link-email.tsx"
   },
   "scripts": {
     "check-types": "tsc --noEmit"

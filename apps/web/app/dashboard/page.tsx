@@ -48,12 +48,20 @@ export default async function DashboardPage() {
       ...chapter,
       status: row?.status ?? ('not_started' as ChapterStatus),
       percent: row?.percentComplete ?? 0,
+      lastVisitedAt: row?.lastVisitedAt ?? null,
     }
   })
 
   const completed = chapters.filter((c) => c.status === 'complete').length
+  // Resume where they actually were: the most recently visited in-progress
+  // chapter wins, then the first unfinished one, then the very first chapter.
   const current =
-    chapters.find((c) => c.status === 'reading') ??
+    chapters
+      .filter((c) => c.status === 'reading')
+      .sort(
+        (a, b) =>
+          (b.lastVisitedAt?.getTime() ?? 0) - (a.lastVisitedAt?.getTime() ?? 0),
+      )[0] ??
     chapters.find((c) => c.status !== 'complete') ??
     chapters[0]
   const overall = chapters.length

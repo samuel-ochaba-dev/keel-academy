@@ -22,6 +22,16 @@ export const env = createEnv({
     // libSQL/Turso connection. Defaults to a local file so dev needs no secrets.
     TURSO_DATABASE_URL: z.string().min(1).default('file:local.db'),
     TURSO_AUTH_TOKEN: z.string().optional(),
+    // Magic-link email. Optional: when unset (local dev) the sign-in link is
+    // printed to the terminal; when set, the link is emailed via Resend.
+    AUTH_RESEND_KEY: z.string().optional(),
+    // From address for magic-link emails. Must be a Resend-verified domain in
+    // production; ignored by the dev console fallback.
+    EMAIL_FROM: z.string().default('Keelacademy <login@keelacademy.dev>'),
+    // GitHub OAuth. Optional: set BOTH to enable the "Continue with GitHub"
+    // sign-in option. Auth.js reads these by convention.
+    AUTH_GITHUB_ID: z.string().optional(),
+    AUTH_GITHUB_SECRET: z.string().optional(),
   },
   client: {},
   // Server vars are read from process.env at runtime (Node); only client vars

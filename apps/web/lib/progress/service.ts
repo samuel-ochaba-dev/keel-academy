@@ -1,54 +1,86 @@
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
-import { chapterProgress, type ChapterProgressRow } from '@/lib/db/schema'
+import {
+  chapterProgress,
+  progressEvents,
+  type ChapterProgressRow,
+} from '@/lib/db/schema'
+import {
+  applyEvent,
+  percentForStatus,
+  type ProgressEvent,
+} from './state-machine'
 
-// All writes are idempotent upserts keyed on (userId, chapterSlug). Opening a
-// chapter twice, or double-submitting "complete", converges on the same row
-// instead of spraying duplicates — the idempotency Chapter 1 teaches.
+// Every write runs the (userId, chapterSlug) row through the progress state
+// machine (state-machine.ts) and, when the status actually changes, appends an
+// audit row — both inside one transaction so the row and its history never
+// drift. Transitions are monotonic, so replaying an event converges on the same
+// row instead of spraying duplicates: the idempotency Chapter 1 teaches.
+//
+// Reading the current status then writing is a read-modify-write, but the
+// transaction plus the monotonic machine make it safe: concurrent writes
+// serialize, and a replayed transition is a no-op (from === to → no audit row).
+async function applyProgress(
+  userId: string,
+  chapterSlug: string,
+  event: ProgressEvent,
+) {
+  return db.transaction(async (tx) => {
+    const existing = await tx.query.chapterProgress.findFirst({
+      where: (table, { and, eq }) =>
+        and(eq(table.userId, userId), eq(table.chapterSlug, chapterSlug)),
+    })
 
-export async function recordChapterVisit(userId: string, chapterSlug: string) {
-  await db
-    .insert(chapterProgress)
-    .values({
-      userId,
-      chapterSlug,
-      status: 'reading',
-      percentComplete: 25,
-      startedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [chapterProgress.userId, chapterProgress.chapterSlug],
-      set: {
-        lastVisitedAt: new Date(),
-        // Never downgrade a completed chapter back to reading.
-        status: sql`case when ${chapterProgress.status} = 'not_started' then 'reading' else ${chapterProgress.status} end`,
-        percentComplete: sql`case when ${chapterProgress.percentComplete} < 25 then 25 else ${chapterProgress.percentComplete} end`,
-        startedAt: sql`coalesce(${chapterProgress.startedAt}, unixepoch() * 1000)`,
-      },
-    })
+    const fromStatus = existing?.status ?? 'not_started'
+    const toStatus = applyEvent(fromStatus, event)
+    const now = new Date()
+
+    await tx
+      .insert(chapterProgress)
+      .values({
+        userId,
+        chapterSlug,
+        status: toStatus,
+        percentComplete: percentForStatus(toStatus),
+        startedAt: now,
+        completedAt: toStatus === 'complete' ? now : null,
+        lastVisitedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [chapterProgress.userId, chapterProgress.chapterSlug],
+        set: {
+          status: toStatus,
+          percentComplete: percentForStatus(toStatus),
+          // Set the first-started / first-completed times once, then keep them.
+          startedAt: existing?.startedAt ?? now,
+          completedAt:
+            toStatus === 'complete' ? (existing?.completedAt ?? now) : null,
+          lastVisitedAt: now,
+        },
+      })
+
+    // Audit only real transitions — a re-visit that stays 'reading' writes none.
+    if (fromStatus !== toStatus) {
+      await tx.insert(progressEvents).values({
+        userId,
+        chapterSlug,
+        event,
+        fromStatus,
+        toStatus,
+        createdAt: now,
+      })
+    }
+
+    return { fromStatus, toStatus, changed: fromStatus !== toStatus }
+  })
 }
 
-export async function markChapterComplete(userId: string, chapterSlug: string) {
-  await db
-    .insert(chapterProgress)
-    .values({
-      userId,
-      chapterSlug,
-      status: 'complete',
-      percentComplete: 100,
-      startedAt: new Date(),
-      completedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [chapterProgress.userId, chapterProgress.chapterSlug],
-      set: {
-        status: 'complete',
-        percentComplete: 100,
-        completedAt: new Date(),
-        lastVisitedAt: new Date(),
-        startedAt: sql`coalesce(${chapterProgress.startedAt}, unixepoch() * 1000)`,
-      },
-    })
+export function recordChapterVisit(userId: string, chapterSlug: string) {
+  return applyProgress(userId, chapterSlug, 'visit')
+}
+
+export function markChapterComplete(userId: string, chapterSlug: string) {
+  return applyProgress(userId, chapterSlug, 'complete')
 }
 
 export function getChapterProgress(userId: string, chapterSlug: string) {

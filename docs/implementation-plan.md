@@ -35,18 +35,18 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M3 - Reading Experience
+**Current Milestone:** M5 - Billing and Entitlements
 
-**Goal:** make the core student reading loop feel real — a persistent
-progress/navigation shell (desktop sidebar + a mobile/tablet drawer), an
-accessible term slide-over that never loses the reader's place, the "Now build
-it" transition, and standalone reference pages that stay connected to the flow.
+**Goal:** make paid access real and independent of checkout redirects — a Paddle
+checkout flow, a signature-verified webhook with an event-dedupe table, an
+enrollment domain service, and entitlement checks that gate the build-along and
+reference surfaces from database state.
 
 **Next Actions:**
 
-1. Extend fixture coverage (more chapters) so the sidebar and next-chapter path span multiple parts.
-2. Consider a lexicon/DSA index page and search (currently in Backlog) once more entries exist.
-3. Layer richer per-chapter progress (novel-read vs build-started vs complete) when the M4 progress state machine lands.
+1. Add the Paddle checkout flow and a signature-verified webhook route with an event-dedupe table.
+2. Build the enrollment domain service and entitlement checks; gate build-along/reference access on it.
+3. Add a billing page plus payment success/failure states.
 
 CI reference: see `docs/ci-plan.md`.
 
@@ -173,7 +173,7 @@ M0 had temporarily deferred), adding build-time Shiki highlighting, and adding t
 
 ## M3 - Reading Experience
 
-**Status:** Current
+**Status:** Done
 
 **Goal:** make the core student reading loop feel real.
 
@@ -223,34 +223,61 @@ stable`), since `showModal()` does not lock page scroll on its own.
 
 ## M4 - Auth and Progress
 
-**Status:** Planned
+**Status:** Done
 
 **Goal:** make student identity and progress durable.
 
 **Build:**
 
-- Auth.js v5 setup.
-- magic link via Resend.
-- GitHub OAuth.
-- Drizzle adapter tables.
-- database sessions.
-- `proxy.ts` for coarse protected-route handling.
-- progress state machine domain service.
-- dashboard progress view.
-- audit event on progress transitions.
+- Auth.js v5 setup. _(done in the M0 rebuild; M4 hardened it)_
+- magic link via Resend. _(done — the Nodemailer shell was replaced by the
+  `next-auth/providers/resend` provider with a custom `sendVerificationRequest`:
+  it prints the link to the terminal when no key is set, and emails a React
+  Email template (`packages/email/magic-link-email`) via the `resend` SDK when
+  `AUTH_RESEND_KEY` is present. `nodemailer` was dropped entirely.)_
+- GitHub OAuth. _(done — a `GitHub` provider wired only when `AUTH_GITHUB_ID`/
+  `AUTH_GITHUB_SECRET` are set, with `allowDangerousEmailAccountLinking` so a
+  GitHub sign-in links to an existing magic-link account on a shared verified
+  email. The sign-in page shows "Continue with GitHub" only when configured.)_
+- Drizzle adapter tables. _(done — from M0)_
+- database sessions. _(done — `session: { strategy: 'database' }`; `proxy.ts`
+  only glances at the session cookie, so the DB is never touched at the edge —
+  no `auth.config.ts` split needed)_
+- `proxy.ts` for coarse protected-route handling. _(done — from M0; guards
+  `/dashboard`)_
+- progress state machine domain service. _(done — new pure
+  `lib/progress/state-machine.ts` (`applyEvent`, `percentForStatus`), monotonic
+  not_started → reading → complete. `service.ts` now reads the row, runs the
+  machine, and writes the result + an audit row in one `db.transaction`,
+  dropping the old inline SQL `case` guards.)_
+- dashboard progress view. _(done — "Continue" now resumes the most recently
+  visited in-progress chapter, by `lastVisitedAt`)_
+- audit event on progress transitions. _(done — new append-only `progress_event`
+  table; a row is written only when the status actually changes)_
 
 **Exit Criteria:**
 
-- A signed-in user can resume where they left off.
-- Progress state transitions are controlled by domain code.
-- Anonymous and signed-in routes behave intentionally.
-- Progress rules are covered by domain tests once tests are available.
+- A signed-in user can resume where they left off. _(met — DB sessions persist;
+  the dashboard resumes the most recently visited chapter)_
+- Progress state transitions are controlled by domain code. _(met — the pure
+  state machine is the single source of truth, covered by vitest)_
+- Anonymous and signed-in routes behave intentionally. _(met — `proxy.ts` gates
+  `/dashboard`; chapter pages read anonymously and invite sign-in to save)_
+- Progress rules are covered by domain tests. _(met — `state-machine.test.ts`
+  covers every transition, the no-downgrade property, and idempotence, wired
+  into `turbo run test` via a new `apps/web` vitest setup)_
+
+**Notes:** `resend` and the email template are imported lazily inside
+`sendVerificationRequest`, so a page that only calls `auth()` never pulls them
+into its bundle. Verified end-to-end: magic-link sign-in over HTTP creates a DB
+session, a first chapter visit writes `reading`/25% plus one `visit` audit row,
+and a second visit (reading → reading) writes none.
 
 ---
 
 ## M5 - Billing and Entitlements
 
-**Status:** Planned
+**Status:** Current
 
 **Goal:** make paid access real and independent of checkout redirects.
 
@@ -363,6 +390,7 @@ stable`), since `showModal()` does not lock page scroll on its own.
 - Core Web Vitals pass.
 - mobile reading pass.
 - security review for auth, API keys, webhooks, and references.
+- Google OAuth as a second social sign-in provider (see Notes).
 - backup and restore notes.
 - seed/demo data strategy.
 - first end-to-end happy path.
@@ -374,6 +402,23 @@ stable`), since `showModal()` does not lock page scroll on its own.
 - Critical docs match implementation.
 - No known P0/P1 launch blockers remain.
 - Rollback and support paths are documented.
+
+**Notes:** Google is the recommended second social provider for a developer
+audience — the best-practice pairing is GitHub + Google, which with the existing
+magic-link fallback stays inside the "2–3 providers max" guideline (more than
+that causes decision paralysis and "which one did I use?" confusion). It is
+deliberately deferred to launch rather than added in M4 for two reasons: (1)
+GitHub + magic link already cover the pre-launch audience, and Google's
+incremental value over passwordless magic link is modest; (2) a clean Google
+consent screen requires Google **brand verification** — a privacy policy hosted
+on the launch domain, a public homepage, Search Console domain ownership, and a
+~2–3 day review — otherwise users hit the "unverified app" warning and a
+100-new-user cap. Google Sign-In uses only non-sensitive scopes, so no CASA
+security audit applies. Implementation is ~10 lines mirroring the M4 GitHub
+provider (`Google({ allowDangerousEmailAccountLinking: true })` +
+`AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` + a button gated on those vars); the
+sign-in page is already structured for it. Apple Sign-In is out of scope — App
+Store Guideline 4.8 only requires it for a native iOS app, not this web app.
 
 ---
 
