@@ -19,6 +19,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "1.11.2",
     "@keelacademy/content": "workspace:*",
+    "@keelacademy/contracts": "workspace:*",
     "@keelacademy/email": "workspace:*",
     "@keelacademy/ui": "workspace:*",
     "@libsql/client": "^0.17.4",

@@ -1,7 +1,7 @@
 {
   "extends": "@keelacademy/typescript-config/react-library.json",
   "compilerOptions": {
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "node"],
     "noEmit": true
   },
   "include": ["src", "vitest.config.ts"],

@@ -225,3 +225,73 @@ export const webhookEvents = sqliteTable(
 )
 
 export type WebhookEventRow = typeof webhookEvents.$inferSelect
+
+// --- CLI & test submissions (M6) --------------------------------------------
+
+// Hashed CLI API keys. The raw key (`keel_<random>`) is shown to the student
+// exactly once when created and is never stored — only its SHA-256 hash. The
+// CLI sends the raw key in the X-Keel-Key header; the server hashes it to find
+// the row (uniqueIndex on hashedKey), then uses the raw key to verify the
+// HMAC signature on submission payloads. Revocation sets `revokedAt`; the
+// lookup query filters on `revokedAt IS NULL`.
+export const apiKeys = sqliteTable(
+  'api_key',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    hashedKey: text('hashed_key').notNull(),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' }),
+    revokedAt: integer('revoked_at', { mode: 'timestamp_ms' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => [
+    uniqueIndex('api_key_hash_idx').on(table.hashedKey),
+    index('api_key_user_idx').on(table.userId),
+  ],
+)
+
+export type ApiKeyRow = typeof apiKeys.$inferSelect
+
+// Durable record of every CLI test submission. A passing submission (status =
+// 'passed') is the proof that the student's local build meets the chapter spec.
+// The server validates HMAC signature, timestamp freshness, test count, and
+// prerequisites before inserting a row. `signatureHash` stores a SHA-256 of the
+// HMAC signature for audit purposes (the full signature is not retained). M7
+// (Reference Unlock) reads this table to gate reference access.
+export const testSubmissions = sqliteTable(
+  'test_submission',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    chapterSlug: text('chapter_slug').notNull(),
+    status: text('status', { enum: ['passed', 'failed'] }).notNull(),
+    testsTotal: integer('tests_total').notNull(),
+    testsPassed: integer('tests_passed').notNull(),
+    testSuiteVersion: text('test_suite_version').notNull(),
+    cliVersion: text('cli_version').notNull(),
+    commitSha: text('commit_sha'),
+    signatureHash: text('signature_hash').notNull(),
+    submittedAt: integer('submitted_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => [
+    index('test_sub_user_idx').on(table.userId),
+    index('test_sub_user_chapter_idx').on(table.userId, table.chapterSlug),
+    index('test_sub_user_time_idx').on(table.userId, table.submittedAt),
+  ],
+)
+
+export type TestSubmissionRow = typeof testSubmissions.$inferSelect
+export type SubmissionStatus = TestSubmissionRow['status']

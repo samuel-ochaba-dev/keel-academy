@@ -1,0 +1,32 @@
+{
+  "name": "@keelacademy/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    "./submission-payload": "./dist/submission-payload.js",
+    "./chapter-spec": "./dist/chapter-spec.js"
+  },
+  "typesVersions": {
+    "*": {
+      "submission-payload": ["./dist/submission-payload.d.ts"],
+      "chapter-spec": ["./dist/chapter-spec.d.ts"]
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@keelacademy/eslint-config": "workspace:*",
+    "@keelacademy/typescript-config": "workspace:*",
+    "eslint": "^9.39.1",
+    "tsup": "^8.5.1",
+    "typescript": "5.9.2"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "@keelacademy/typescript-config/base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

@@ -6,5 +6,28 @@
   "license": "UNLICENSED",
   "bin": {
     "keel": "./bin/keel.mjs"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@keelacademy/contracts": "workspace:*",
+    "@keelacademy/test-suite": "workspace:*",
+    "commander": "^15.0.0",
+    "vitest": "^3.2.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@keelacademy/eslint-config": "workspace:*",
+    "@keelacademy/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.39.1",
+    "tsup": "^8.5.0",
+    "typescript": "5.9.2"
   }
 }

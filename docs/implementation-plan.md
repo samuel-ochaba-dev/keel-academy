@@ -35,7 +35,7 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M5 - Billing and Entitlements
+**Current Milestone:** M6 - CLI and Test Suite
 
 **Goal:** make paid access real and independent of checkout redirects — a Paddle
 checkout flow, a signature-verified webhook with an event-dedupe table, an
@@ -277,7 +277,7 @@ and a second visit (reading → reading) writes none.
 
 ## M5 - Billing and Entitlements
 
-**Status:** Current
+**Status:** Done
 
 **Goal:** make paid access real and independent of checkout redirects.
 
@@ -299,11 +299,23 @@ and a second visit (reading → reading) writes none.
 - A failed payment does not grant access.
 - A valid enrollment unlocks the intended gated surface.
 
+**Notes:** all M5 code is present and wired into chapter, DSA, lexicon, and
+dashboard pages, but the paywall is dormant until Paddle secrets
+(`PADDLE_API_KEY` + `PADDLE_WEBHOOK_SECRET`) are set — without them
+`isBillingConfigured()` returns `false` and entitlement checks fall back to open
+mode (all content accessible, no lock badges, no paywall). To visually verify
+the gating UI locally without a Paddle account, set `BILLING_FORCE_ENABLED=true`
+in `.env.local`: this makes `isBillingConfigured()` return `true` so the lock
+badges, `ContentPaywall`, billing plan cards, and dashboard upsell all render.
+Checkout buttons stay disabled (no `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` to
+initialize Paddle.js) and the webhook route still 503s — only real Paddle sandbox
+credentials complete the end-to-end flow. Never set this flag in production.
+
 ---
 
 ## M6 - CLI and Test Suite
 
-**Status:** Planned
+**Status:** Current
 
 **Goal:** let students prove local build completion without Keelacademy running their code.
 

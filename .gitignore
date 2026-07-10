@@ -30,6 +30,10 @@ out/
 build
 dist
 
+# Track build output for internal workspace packages so consumers
+# resolve their exports without a separate build step.
+!packages/contracts/dist/
+
 # Local SQLite
 *.db
 *.db-journal

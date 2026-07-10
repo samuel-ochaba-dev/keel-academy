@@ -516,6 +516,38 @@ The system hardens. Plugins run in isolation. The deployment is production-grade
 
 ---
 
+## Part VI: Judgment (Chapter 17)
+
+The capstone. The student now has every piece — workflow engine, model runtime, retrieval, guardrails. The last skill is the one most agent courses never teach: knowing when not to build an agent.
+
+---
+
+### Chapter 17: When to Let the Model Drive
+
+**Novel**: The junior ships a "fully autonomous agent" for ticket triage. It works in the demo. In week two it reroutes a refund request to the code-deploy pipeline because nobody constrained its tools, and it loops sixteen times because nobody set a stop condition. The senior doesn't add more autonomy. He removes it — and the system gets more reliable. The lesson isn't "agents are bad." It's that most production "agents" are workflows with a model call inside one node, and that's usually the right shape.
+
+**Build-Along**:
+
+- Refactor one Kairo workflow node from a hardcoded path into a model-directed step — the agent loop: plan > tool call > observe > decide.
+- Add a max-iteration stop condition and an explicit "return control to human" exit.
+- Implement the same task twice: once as a **workflow** (predefined DAG), once as an **agent** (model picks the next step). Run both against the same test suite.
+- Instrument both so the difference is visible in the traces: steps taken, tokens spent, time to completion, and failure mode on an unexpected input.
+- Add a decision record (a short written rationale) stating which implementation ships and why.
+
+**Engineering Lexicon**:
+
+- **Workflow**: LLM and tools orchestrated through code paths written in advance. Predictable, consistent, cheap. Use it when the task is well-defined.
+- **Agent**: the model dynamically decides its own next step and tool use from what it observes. Flexible, expensive, prone to compounding error. Use it only when the path can't be predicted up front.
+- **The trap**: reaching for an agent because it sounds more capable. Kairo's DAG engine is the workflow; the agent is the exception, not the default.
+- **Stop condition**: the rule that ends the loop. Without one, an agent spends tokens until something breaks.
+
+**Emerging DSA**:
+
+- Divergence measurement (comparing two execution traces by step count and branching)
+- Iteration bound analysis (why a fixed cap prevents unbounded cost)
+
+---
+
 ## Curriculum Map: What's Built by End of Each Part
 
 | After Part         | What Works                                                                                                                       |
@@ -525,6 +557,7 @@ The system hardens. Plugins run in isolation. The deployment is production-grade
 | Part III (Ch 9-12) | Visual workflows execute as DAGs, schedule/webhook/plugin triggers fire autonomously, HITL pauses and resumes, parallel branches |
 | Part IV (Ch 13-14) | Documents indexed through 8-stage pipeline, hybrid retrieval with reranking works, knowledge nodes in workflows                  |
 | Part V (Ch 15-16)  | Plugins run in isolated daemon, sandbox executes code safely, full OTel observability, production-ready 10-container deployment  |
+| Part VI (Ch 17)    | Same task built as workflow and as agent, traced and compared; student ships one with a written rationale                        |
 
 ---
 
@@ -547,7 +580,8 @@ The system hardens. Plugins run in isolation. The deployment is production-grade
 | 13      | Rolling hash, inverted index, HNSW                         | Dedup, keyword search, vector indexing        |
 | 14      | HNSW (deep), BM25, RRF                                     | Vector search internals, scoring              |
 | 15      | Process scheduling, capability security, network ACL graph | Plugin isolation                              |
-| 16      | Consistent hashing, circuit breaker, exponential backoff   | Production resilience                         |
+| 16       | Consistent hashing, circuit breaker, exponential backoff   | Production resilience                         |
+| 17       | Divergence measurement, iteration bound analysis          | Workflow vs agent comparison                  |
 
 ---
 
@@ -562,4 +596,4 @@ The system hardens. Plugins run in isolation. The deployment is production-grade
 7. **RAG split into two chapters**: indexing pipeline (Ch 13) and retrieval engine (Ch 14) because they have different execution models (async Celery vs sync request-time)
 8. **Docker goes from "6 containers" to real 10-container topology** throughout, culminating in Chapter 16
 9. **DSA progression tightened**: each algorithm now directly solves a problem the student encounters in that chapter (not a disconnected exercise)
-```
+10. **Chapter 17 added (Part VI: Judgment)**: workflow-vs-agent comparison with the Anthropic distinction — most production "agents" are workflows with a model call inside one node; the capstone teaches when to hand control to the model and when not to

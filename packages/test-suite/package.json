@@ -4,16 +4,23 @@
   "private": true,
   "type": "module",
   "license": "UNLICENSED",
+  "exports": {
+    "./chapters/01/vitest.config": "./src/chapters/01/vitest.config.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@keelacademy/contracts": "workspace:*",
     "@keelacademy/email": "workspace:*"
   },
   "devDependencies": {
+    "@keelacademy/eslint-config": "workspace:*",
     "@keelacademy/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "react": "^19.2.0",
     "typescript": "5.9.2",

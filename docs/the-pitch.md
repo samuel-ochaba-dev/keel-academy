@@ -2,11 +2,11 @@
 
 ## What This Is
 
-Keelacademy is an online school for software engineers who can make things work but can't make things hold.
+Keelacademy is an AI-agent engineering school for software engineers who can make things work but can't make things hold.
 
-They ship features. But the codebase is a liability by month three. Services couple to each other in ways nobody mapped. The database query that worked fine in development takes 9 seconds in production. There's no test that would have caught the regression that just paged someone at 2am. The architecture is whatever shape the last five pull requests left it in.
+You don't learn agents by wiring up a chatbot. You learn them by building the system that runs them — the workflow engine, the model runtime, the retrieval layer, the guardrails — and then earning the right to hand control to the model. That's the part every "build your first agent" tutorial skips, and it's the part that breaks in production.
 
-Keelacademy closes that gap. Students leave with the ability to design, build, test, deploy, and maintain a multi-service system under real constraints: load, latency, cost, team coordination, and time.
+Most agent courses stop at the demo. Keelacademy starts where they stop. Students build **Kairo**, a 10-service agent platform, and engineer it to survive real load, real outages, and real users — then decide, with evidence, when a plain workflow would have been the safer choice.
 
 ---
 
@@ -14,7 +14,7 @@ Keelacademy closes that gap. Students leave with the ability to design, build, t
 
 One project. Start to finish. Self-paced.
 
-Students build **Kairo**: an LLM application platform with a streaming chat engine, visual workflow builder (schedule triggers, webhook triggers, plugin triggers, human-in-the-loop approval gates), a 12-stage RAG pipeline (extract, clean, split, embed, retrieve, rerank, and six more), multi-provider model runtime with a 6-stage invocation pipeline, plugin isolation via a Go daemon with backwards invocation, sandboxed code execution, SSRF protection, and OpenTelemetry observability across the full stack. 10 services. PostgreSQL + pgvector, Redis, Celery workers, a Go sandbox, a Go plugin daemon, an SSRF proxy, Nginx, Docker Compose deployment. The kind of system that earns the phrase "production-grade" because it actually handles the things production throws at it.
+Students build **Kairo**: an AI-agent platform with a streaming chat engine, visual workflow builder (schedule triggers, webhook triggers, plugin triggers, human-in-the-loop approval gates), a 12-stage RAG pipeline (extract, clean, split, embed, retrieve, rerank, and six more), multi-provider model runtime with a 6-stage invocation pipeline, plugin isolation via a Go daemon with backwards invocation, sandboxed code execution, SSRF protection, and OpenTelemetry observability across the full stack. 10 services. PostgreSQL + pgvector, Redis, Celery workers, a Go sandbox, a Go plugin daemon, an SSRF proxy, Nginx, Docker Compose deployment. The kind of system that earns the phrase "production-grade" because it actually handles the things production throws at it — and because you can say exactly why each boundary exists.
 
 16 chapters across 5 parts. Four layers, interlocking:
 
@@ -75,9 +75,11 @@ Students learn algorithms by building the system that needs them. Then they can 
 
 ## What Students Leave With
 
-**A system they built from commit one.** Multi-service, tested, documented, deployable with one command. Not a to-do app. Not a clone of a tutorial. An LLM application platform with 10 running services, a clean git history of conventional commits, and CI that runs on every push.
+**A system they built from commit one.** Multi-service, tested, documented, deployable with one command. Not a to-do app. Not a clone of a tutorial. An AI-agent platform with 10 running services, a clean git history of conventional commits, and CI that runs on every push.
 
-**Architectural fluency.** They can draw a system on a whiteboard, explain why the pieces are shaped that way, and write a design doc that a senior engineer would approve. They know what a 10-container Docker Compose topology looks like and why each service boundary exists.
+**Agent judgment, not just agent code.** They can say why a workflow beats an agent for a given task — and prove it with the two implementations they built and ran. They know when to hand control to the model and when to keep it.
+
+**Architectural fluency.** They can draw an agent system on a whiteboard, explain why the pieces are shaped that way, and write a design doc that a senior engineer would approve. They know what a 10-container Docker Compose topology looks like and why each service boundary exists.
 
 **Engineering discipline as reflex.** CI that runs on every push. Tests that catch regressions before deploy. Structured logs correlated with trace IDs. OpenTelemetry spans across 10 services. Conventional commits that read like a changelog. Ruff + mypy + ESLint enforced from day one.
 
@@ -95,8 +97,10 @@ Developers who can build a CRUD app but can't answer:
 - "Walk me through your testing strategy."
 - "How does your workflow engine resume after a crash?"
 - "What prevents a plugin from accessing your internal database?"
+- "Should this task be an agent, or just a workflow with a model call inside one node?"
+- "Where does your agent stop, and what happens if it never hits that stop?"
 
-They've written code professionally or in personal projects. They understand variables, functions, HTTP, databases at a basic level. They don't understand why their code becomes unmaintainable, why it breaks under load, or how to design something that a team of five could extend without rewriting.
+They've written code professionally or in personal projects. They understand variables, functions, HTTP, databases at a basic level. They don't understand why their code becomes unmaintainable, why it breaks under load, or how to design something that a team of five could extend without rewriting. They've followed an "agent" tutorial that worked in the demo and died in production.
 
 ## Who This Is Not For
 
@@ -110,13 +114,14 @@ Other programs produce developers who know syntax and frameworks. Keelacademy pr
 
 | Typical Coding Education           | Keelacademy                                          |
 | ---------------------------------- | ---------------------------------------------------- |
-| 50 disconnected exercises          | One system, 16 chapters, full depth                  |
+| 50 disconnected exercises          | One agent platform, 17 chapters, full depth         |
 | Concepts in isolation              | Concepts introduced because the project demands them |
 | "Here's how to use this framework" | "Here's why this design decision breaks at scale"    |
 | Algorithms as abstract puzzles     | Algorithms as implementation tools                   |
 | Follow-along video                 | Spec, tests, figure it out                           |
 | Completion certificate             | A deployed, running system with a clean git history  |
-| Learn tools                        | Learn judgment                                       |
+| Agent tutorials that stop at demo  | An agent system engineered to survive production     |
+| Learn tools                        | Learn judgment, including when not to use an agent   |
 
 ---
 
@@ -162,3 +167,9 @@ Plugins run in isolation. The deployment is production-grade.
 
 - Ch 15: The Plugin Daemon (Go daemon, backwards invocation, sandbox, SSRF proxy)
 - Ch 16: The Production Deploy (Nginx, OTel, Sentry, graceful shutdown, migrations)
+
+### Part VI: Judgment (Chapter 17)
+
+The capstone. Knowing when not to build an agent.
+
+- Ch 17: When to Let the Model Drive (workflow vs agent, stop conditions, the two implementations you run and compare)

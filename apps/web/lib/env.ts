@@ -38,6 +38,11 @@ export const env = createEnv({
     // inbound signatures. When unset, entitlement checks run in open mode.
     PADDLE_API_KEY: z.string().optional(),
     PADDLE_WEBHOOK_SECRET: z.string().optional(),
+    // Dev-only: force the paywall ON without real Paddle secrets so the M5
+    // gating UI (lock badges, paywall, billing plan cards) is visible locally.
+    // Checkout buttons stay disabled (no Paddle.js token); the webhook route
+    // still 503s. Never set this in production.
+    BILLING_FORCE_ENABLED: z.stringbool().optional(),
   },
   client: {
     // Sandbox for testing, production for live. Drives both Paddle.js and the

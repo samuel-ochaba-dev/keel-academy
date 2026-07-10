@@ -9,6 +9,7 @@ import { env } from '@/lib/env'
 // the optional-integration pattern used for GitHub OAuth in auth.ts: absent
 // secrets degrade a feature gracefully rather than breaking the app.
 export function isBillingConfigured(): boolean {
+  if (env.BILLING_FORCE_ENABLED) return true
   return Boolean(env.PADDLE_API_KEY && env.PADDLE_WEBHOOK_SECRET)
 }
 

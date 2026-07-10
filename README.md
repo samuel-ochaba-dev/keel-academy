@@ -1,14 +1,16 @@
 # Keelacademy
 
-An online school for software engineers who can make things work but can't make things hold.
+An AI-agent engineering school for software engineers who can make things work but can't make things hold.
 
 ---
 
 ## What This Is
 
-Students build **Kairo**: a multi-service LLM application platform with streaming chat, a visual workflow engine (triggers, human-in-the-loop, parallel execution), a 12-stage RAG pipeline, multi-provider model runtime, plugin isolation via a Go daemon, sandboxed code execution, and OpenTelemetry observability. 10 services. Deployed with one command.
+Students build **Kairo**: a multi-service AI-agent platform with streaming chat, a visual workflow engine (triggers, human-in-the-loop, parallel execution), a 12-stage RAG pipeline, multi-provider model runtime, plugin isolation via a Go daemon, sandboxed code execution, and OpenTelemetry observability. 10 services. Deployed with one command.
 
-Self-paced. 16 chapters. One project, full depth, production-grade from commit one.
+Most agent courses stop at the demo. Keelacademy starts where they stop: you build the system that runs agents — the workflow engine, the model runtime, the retrieval layer, the guardrails — and earn the right to hand control to the model. By the end you've shipped Kairo across 10 services with observability on every request.
+
+Self-paced. 17 chapters. One project, full depth, production-grade from commit one.
 
 ---
 
@@ -72,7 +74,9 @@ One page per chapter. Four layers accessed contextually. No tab-switching, no co
 
 ## What Students Leave With
 
-**A system they built from commit one.** Multi-service, tested, documented, deployable. Not a to-do app. Not a tutorial clone. An LLM platform with 10 running services and a clean git history.
+**A system they built from commit one.** Multi-service, tested, documented, deployable. Not a to-do app. Not a tutorial clone. An AI-agent platform with 10 running services and a clean git history.
+
+**Agent judgment, not just agent code.** They can say why a workflow beats an agent for a given task — and prove it with the two implementations they built and ran.
 
 **Architectural fluency.** They can draw a system on a whiteboard, explain why the pieces are shaped that way, and write a design doc a senior engineer would approve.
 
@@ -90,6 +94,8 @@ Developers who can build a CRUD app but can't answer:
 - "What happens when this external API goes down?"
 - "Why did you structure it this way instead of that way?"
 - "Walk me through your testing strategy."
+- "Should this task be an agent, or just a workflow with a model call inside one node?"
+- "Where does your agent stop, and what happens if it never hits that stop?"
 
 They've written code professionally or in personal projects. They don't understand why their code becomes unmaintainable, why it breaks under load, or how to design something a team of five could extend without rewriting.
 
@@ -103,7 +109,7 @@ Complete beginners who haven't written a function. Keelacademy assumes you can c
 
 | Typical Coding Education           | Keelacademy                                          |
 | ---------------------------------- | ---------------------------------------------------- |
-| 50 disconnected exercises          | One system, 16 chapters, full depth                  |
+| 50 disconnected exercises          | One agent platform, 17 chapters, full depth          |
 | Concepts in isolation              | Concepts introduced because the project demands them |
 | "Here's how to use this framework" | "Here's why this design decision breaks at scale"    |
 | Algorithms as abstract puzzles     | Algorithms as implementation tools                   |
