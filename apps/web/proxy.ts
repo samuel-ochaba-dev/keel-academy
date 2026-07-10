@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // redirects anonymous users away from protected routes. The real authorization
 // (valid session -> user) happens in the page via `await auth()` against the DB,
 // because database-session validation needs DB access, not a cookie glance.
-const PROTECTED_PREFIXES = ['/dashboard']
+const PROTECTED_PREFIXES = ['/dashboard', '/billing']
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -29,5 +29,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard', '/dashboard/:path*'],
+  matcher: ['/dashboard', '/dashboard/:path*', '/billing', '/billing/:path*'],
 }

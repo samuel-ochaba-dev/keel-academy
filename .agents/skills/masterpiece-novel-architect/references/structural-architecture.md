@@ -6,7 +6,13 @@ Structure is not scaffolding you remove after the building stands. Structure IS 
 
 Choose structure that embodies your theme. Then enforce it mercilessly.
 
-## The emotional function of plot points
+## Invariant core (holds in every contract)
+
+Whatever shape you choose: **structure is argument, not decoration; every element earns its place; removing a load-bearing part damages the whole.** That is universal. The *shape itself* — arc, wave, meander, spiral, network — is a contract choice, not a law. What follows is two protocols: the **arc** (for plot-forward, tragic, resolving contracts) and the **non-arc shape repertoire** (for interiority-forward, accretive, irresolute contracts). Commit a contract (see `contract-and-traditions.md`), then use the matching protocol.
+
+## Arc protocol — the emotional function of plot points
+
+*Use for the plot-forward / tragic / comic / genre / resolving contracts.* This is the dramatic/Aristotelian arc — one shape among several, and the right one when the brief's energy escalates toward a convergence.
 
 Plot points are not events. They are emotional turns in the reader. Each serves a distinct function:
 
@@ -34,7 +40,7 @@ In masterwork, the point of no return often reveals the character's fatal flaw. 
 
 Causality is everything. Each action produces a reaction that produces the next action. Without causality, narrative becomes anecdotal: one thing after another rather than one thing because of another.
 
-The ratchet principle: tension can tighten but never loosen until the climax. Every scene must leave the situation more pressurized than it found it. If a scene releases tension without earning it, cut the scene.
+The ratchet principle *(arc-contract-specific)*: in the arc, tension can tighten but never loosen until the climax; every scene leaves the situation more pressurized than it found it. This is arc-law, not universal law — in accretive/non-arc contracts (below), pressure comes from juxtaposition and recurrence, not from a lock that never loosens, and a "release" can be exactly right.
 
 ### Midpoint (the revelation that changes the game)
 
@@ -56,7 +62,7 @@ Test: if you can reach the climax without all prior scenes, those prior scenes a
 
 ### Resolution (the new silence)
 
-Masterwork resolutions do not explain. They show the new state of being that the story has produced. The reader needs a moment to process. But the resolution should also contain one final surprise: a shift in understanding that reframes everything that came before.
+*In the ambiguous/irresolute contract*, resolutions do not explain — they show the new state of being the story produced, often with one final reframing surprise. *In comic, tragic, mystery, and genre contracts, resolution is the contract*: the reversal-and-recognition lands, the closure arrives, and withholding it breaks the promise the book made (Aristotle, *Poetics*; Austen's comic closure). Either way the ending should leave the reader changed — but whether it resolves or transforms-without-resolving is the contract's call, not a universal law.
 
 ## Structural creativity techniques
 
@@ -66,7 +72,7 @@ Arrange episodes so the second half mirrors the first half in reverse. This crea
 
 ### Mystery structure for non-mystery stories
 
-Withhold information. Reveal the past in layers. Let the reader piece together the truth. Fitzgerald does this in Gatsby: the novel is a mystery where the crime is self-invention.
+Withhold information. Reveal the past in layers. Let the reader piece together the truth. Fitzgerald does this in Gatsby: the novel withholds Gatsby's past and reveals it in layers, mystery-style — self-invention is its subject, not literally its crime.
 
 ### Rhythmic mirroring
 
@@ -78,4 +84,20 @@ Break chronology not for novelty but to juxtapose moments that illuminate each o
 
 ### Parallel structures
 
-Multiple storylines that rhyme thematically but diverge in outcome. Middlemarch does this with four marriage plots, each illuminating a different facet of the same question about vocation and compromise.
+Multiple storylines that rhyme thematically but diverge in outcome. Middlemarch does this with several parallel marriage plots, each illuminating a different facet of the same question about vocation and compromise.
+
+## Non-arc shape repertoire
+
+*Use for the interiority-forward, accretive, irresolute contracts — where the story's energy is associative and recurrent rather than escalating toward a single climax.* Jane Alison (*Meander, Spiral, Explode*, 2019) documents masterworks built on shapes that are not a rising line; Ursula K. Le Guin's "Carrier Bag Theory of Fiction" (1986) makes the same case for the container/accretive narrative against the arrow/conflict one. Woolf's *The Waves* and *Mrs Dalloway* organize by tide and juxtaposition, not by a lockable "point of no return."
+
+The selector: **if the brief's energy is accretive/associative rather than escalating, choose a shape from the repertoire**, and drop the ratchet — pressure here comes from pattern, not from a lock.
+
+- **Wave** — tidal rise and fall; recurring swells rather than one climb.
+- **Wavelet** — many small repeating rises; the texture of daily or seasonal recurrence.
+- **Meander** — digression that wanders and returns; the river that bends back on itself.
+- **Spiral** — repeated return to one site or image, each pass deeper.
+- **Radial / explosion** — a single center struck from many angles; perspectives around one event.
+- **Network / cell** — braided, ensemble, or modular; parts that connect without a single spine.
+- **Fractal** — self-similar patterns repeating at different scales.
+
+These are not "experimental for its own sake" when the material's energy is genuinely accretive — the test is *necessity*, not conventionality. Comic, genre, and moral-clarity contracts resolve and explain by design; the non-arc repertoire is for contracts that don't.

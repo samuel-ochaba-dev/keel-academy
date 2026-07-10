@@ -42,7 +42,9 @@ AI-generated fiction has specific, predictable failure modes that prevent it fro
 
 **How to detect it**: Can you state what the novel "believes" in one sentence? If yes, it is a thesis, not a theme.
 
-**How to fix it**: Distribute moral weight across incompatible positions. Make both sides genuinely compelling. The novel's job is to force the reader to hold contradiction, not to resolve it.
+**Contract-dependent — this is a failure only within the emergent-theme / ambiguous contract.** A moral-clarity fable, parable, or Tolstoyan novel that "has a point" is *not* propaganda; it is executing its contract. There the failure is not having a thesis but a thesis the book only *announces* rather than *inhabits*. Apply this anti-pattern when the committed contract is ambiguous-literary; suppress it when the contract is fabulist/moral-clarity.
+
+**How to fix it (ambiguous contract)**: Distribute moral weight across incompatible positions. Make both sides genuinely compelling. The novel's job is to force the reader to hold contradiction, not to resolve it. **How to fix it (moral-clarity contract)**: keep the vision, but earn it through full embodiment — a concrete world and a figure who *lives* the claim — so it is inhabited, not merely stated.
 
 **Before**: A novel about climate change where the scientist protagonist is right, the corporate antagonist is wrong, and the ending shows consequences of inaction.
 
@@ -56,7 +58,9 @@ AI-generated fiction has specific, predictable failure modes that prevent it fro
 
 **How to detect it**: Do you feel you fully understand why the character does what they do? If yes, they are too shallow for masterwork.
 
-**How to fix it**: Leave gaps. Refuse to explain. Let the character do things that surprise even the narrator. Create moments where motivation is genuinely ambiguous, not because you withheld information but because the character is genuinely opaque to themselves.
+**Contract-dependent — this is a failure only within the round/opaque contract.** A fully-legible, masterful-flat character (Mrs Micawber, a fable's protagonist, a comic archetype) is not a failure — it is the right instrument for comic, mythic, and moral-clarity contracts, where legibility is the point. Apply this anti-pattern when the committed contract wants round/opaque characters; suppress it when the contract wants masterful-flat ones (see the masterful-flat protocol in `character-depth.md`).
+
+**How to fix it (round/opaque contract)**: Leave gaps. Refuse to explain. Let the character do things that surprise even the narrator. Create moments where motivation is genuinely ambiguous, not because you withheld information but because the character is genuinely opaque to themselves.
 
 **Before**: "She pushed him away because her father had abandoned her at seven, and she had learned that love was a precursor to loss. She recognized the pattern even as she repeated it."
 
@@ -68,13 +72,21 @@ AI-generated fiction has specific, predictable failure modes that prevent it fro
 
 **Why it happens**: The model interprets "masterwork" as "formally innovative" and adds complexity that does not earn its presence. The innovation is decorative rather than necessary.
 
-<p><br/></p>
-
 **How to detect it**: Ask: if you told this story in the simplest possible way, would the theme still work? If yes, the formal innovation is unnecessary.
 
-<p><br/></p>
-
 **How to fix it**: Every formal choice must be demanded by the content. Non-linear structure because the character's experience of time is non-linear. Multiple perspectives because no single perspective contains the truth. If the simplest form works, use the simplest form.
+
+## The one AI failure above all others
+
+### 0. Default-to-ambiguity mush
+
+**What it looks like**: Asked for "a literary masterpiece," the model reflexively produces tasteful, resolution-resisting, theme-withholding, morally-balanced, opaque-character fiction — *regardless of the brief.* A comic premise comes out wistful and unresolved; a parable refuses to state its point; a thriller withholds the closure its genre promised.
+
+**Why it happens**: The training-data centroid of "literary fiction" is the ambiguous-literary tradition, so that is the model's default aesthetic. This is genre averaging one level up — not at the sentence, but at the *aesthetic*.
+
+**How to detect it**: Would this output be roughly the same for a different brief in a different tradition? If a comic, a fable, and an elegy all come out tasteful-and-irresolute, the mush is winning.
+
+**How to fix it**: Run Step 0 (`contract-and-traditions.md`) first. Commit to a tradition. If the committed contract is comic, moral-clarity, plot-forward, fabulist, or resolving, *actively suppress* the ambiguous-literary reflexes — resolve the plot, state the theme, make the character legible, land the closure. The contract, not the default, is the law.
 
 ## Secondary anti-patterns
 

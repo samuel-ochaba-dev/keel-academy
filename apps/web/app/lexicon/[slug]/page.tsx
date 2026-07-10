@@ -4,6 +4,9 @@ import { notFound } from 'next/navigation'
 import { lexicon } from '@keelacademy/content/collections'
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 import { getChapterForTerm, getLexiconEntry } from '@keelacademy/content/lookup'
+import { auth } from '@/auth'
+import { canAccessTerm } from '@/lib/entitlements/service'
+import { ContentPaywall } from '@/components/content-paywall'
 import { MDXContent } from '@/components/mdx-content'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +36,23 @@ export default async function LexiconPage({
   if (!entry) notFound()
 
   const introChapter = getChapterForTerm(slug)
+  const session = await auth()
+  const hasAccess = await canAccessTerm(slug, session?.user?.id ?? null)
+
+  const paywallJsonLd = !hasAccess
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'DefinedTerm',
+        name: entry.title,
+        description: entry.summary,
+        isAccessibleForFree: false,
+        hasPart: {
+          '@type': 'WebPageElement',
+          isAccessibleForFree: false,
+          cssSelector: '.paywalled',
+        },
+      }
+    : null
 
   return (
     <div className="min-h-screen">
@@ -62,9 +82,24 @@ export default async function LexiconPage({
               <ArrowRightIcon className="size-4" aria-hidden />
             </Link>
           ) : null}
-          <div data-layer="lexicon" className="mt-8">
-            <MDXContent code={entry.body} />
-          </div>
+          {paywallJsonLd ? (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(paywallJsonLd) }}
+            />
+          ) : null}
+          {hasAccess ? (
+            <div data-layer="lexicon" className="mt-8">
+              <MDXContent code={entry.body} />
+            </div>
+          ) : (
+            <div className="paywalled mt-8">
+              <ContentPaywall
+                kind="reference"
+                signedIn={Boolean(session?.user?.id)}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

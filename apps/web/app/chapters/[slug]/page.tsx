@@ -15,8 +15,10 @@ import {
   recordChapterVisit,
 } from '@/lib/progress/service'
 import type { ChapterStatus } from '@/lib/db/schema'
+import { canAccessChapter } from '@/lib/entitlements/service'
 import { completeChapterAction } from './actions'
 import { ChapterSidebar, type NavChapter } from '@/components/chapter-sidebar'
+import { ContentPaywall } from '@/components/content-paywall'
 import { ChapterTopbar } from '@/components/chapter-topbar'
 import { ConceptChips } from '@/components/concept-chips'
 import { MDXContent } from '@/components/mdx-content'
@@ -63,8 +65,15 @@ export default async function ChapterPage({
   const session = await auth()
   const userId = session?.user?.id ?? null
 
-  // Idempotent (the chapter's own theme): reopening keeps one row current.
-  if (userId) await recordChapterVisit(userId, slug)
+  // Whole-chapter paywall: a free-sample chapter is open to everyone, any other
+  // needs an active enrollment. Access is derived from DB state, never a
+  // redirect. Gated visitors get the header + a paywall instead of the body.
+  const hasAccess = await canAccessChapter(chapter, userId)
+
+  // Only count a visit when the reader can actually read — no progress for a
+  // paywalled view. Idempotent (the chapter's own theme): reopening keeps one
+  // row current.
+  if (userId && hasAccess) await recordChapterVisit(userId, slug)
 
   const [progress, progressRows] = await Promise.all([
     userId ? getChapterProgress(userId, slug) : Promise.resolve(undefined),
@@ -93,19 +102,43 @@ export default async function ChapterPage({
     (row) => row.status === 'complete',
   ).length
 
-  const termEntries: TermEntry[] = entries.map((entry) => ({
-    slug: entry.slug,
-    title: entry.title,
-    summary: entry.summary,
-    kind: entry.kind,
-    content: <MDXContent code={entry.body} />,
-  }))
-  const concepts = entries.map((entry) => ({
-    slug: entry.slug,
-    title: entry.title,
-    kind: entry.kind,
-  }))
+  // Term panels render full reference bodies inline, so only build them with
+  // access — a gated chapter must not ship its concepts to the client.
+  const termEntries: TermEntry[] = hasAccess
+    ? entries.map((entry) => ({
+        slug: entry.slug,
+        title: entry.title,
+        summary: entry.summary,
+        kind: entry.kind,
+        content: <MDXContent code={entry.body} />,
+      }))
+    : []
+  const concepts = hasAccess
+    ? entries.map((entry) => ({
+        slug: entry.slug,
+        title: entry.title,
+        kind: entry.kind,
+      }))
+    : []
   const status: ChapterStatus = progress?.status ?? 'not_started'
+
+  // Paywalled-content structured data (Google Search Central): mark the gated
+  // region (.paywalled) as not free so Google indexes the chapter without
+  // treating the gate as cloaking. Only emitted when actually gated.
+  const paywallJsonLd = !hasAccess
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: chapter.title,
+        description: chapter.excerpt,
+        isAccessibleForFree: false,
+        hasPart: {
+          '@type': 'WebPageElement',
+          isAccessibleForFree: false,
+          cssSelector: '.paywalled',
+        },
+      }
+    : null
 
   return (
     <div className="min-h-screen">
@@ -146,54 +179,72 @@ export default async function ChapterPage({
               {chapter.excerpt}
             </p>
 
-            {concepts.length > 0 ? (
-              <div className="mt-8 rounded-xl border border-border bg-card/60 p-5">
-                <ConceptChips concepts={concepts} />
-              </div>
+            {paywallJsonLd ? (
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(paywallJsonLd),
+                }}
+              />
             ) : null}
 
-            <article className="mt-12">
-              <div data-layer="novel" className="mx-auto max-w-[65ch]">
-                <MDXContent code={chapter.body} />
+            {!hasAccess ? (
+              <div className="paywalled mt-12">
+                <ContentPaywall kind="chapter" signedIn={Boolean(userId)} />
               </div>
-            </article>
-
-            {buildAlong ? (
-              <section className="mt-16">
-                <div className="mx-auto max-w-[75ch]">
-                  <div className="flex items-center gap-4">
-                    <Separator className="flex-1" />
-                    <span className="font-heading text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-                      Now build it
-                    </span>
-                    <Separator className="flex-1" />
+            ) : (
+              <>
+                {concepts.length > 0 ? (
+                  <div className="mt-8 rounded-xl border border-border bg-card/60 p-5">
+                    <ConceptChips concepts={concepts} />
                   </div>
-                  <p className="mt-4 text-center text-sm text-muted-foreground">
-                    Here is what the senior asked the junior to produce. Now it&rsquo;s
-                    your turn.
-                  </p>
+                ) : null}
 
-                  <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground lg:hidden">
-                    <MonitorIcon
-                      className="mt-0.5 size-4 shrink-0 text-primary"
-                      aria-hidden
-                    />
-                    <p>
-                      This section involves coding. It&rsquo;s best experienced on a
-                      larger screen.
-                    </p>
+                <article className="mt-12">
+                  <div data-layer="novel" className="mx-auto max-w-[65ch]">
+                    <MDXContent code={chapter.body} />
                   </div>
+                </article>
 
-                  <div
-                    data-layer="build-along"
-                    className="mt-8 rounded-xl border border-border bg-card p-6 md:p-8"
-                  >
-                    <MDXContent code={buildAlong.body} />
-                  </div>
-                </div>
-              </section>
-            ) : null}
+                {buildAlong ? (
+                  <section className="mt-16">
+                    <div className="mx-auto max-w-[75ch]">
+                      <div className="flex items-center gap-4">
+                        <Separator className="flex-1" />
+                        <span className="font-heading text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                          Now build it
+                        </span>
+                        <Separator className="flex-1" />
+                      </div>
+                      <p className="mt-4 text-center text-sm text-muted-foreground">
+                        Here is what the senior asked the junior to produce. Now
+                        it&rsquo;s your turn.
+                      </p>
 
+                      <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground lg:hidden">
+                        <MonitorIcon
+                          className="mt-0.5 size-4 shrink-0 text-primary"
+                          aria-hidden
+                        />
+                        <p>
+                          This section involves coding. It&rsquo;s best
+                          experienced on a larger screen.
+                        </p>
+                      </div>
+
+                      <div
+                        data-layer="build-along"
+                        className="mt-8 rounded-xl border border-border bg-card p-6 md:p-8"
+                      >
+                        <MDXContent code={buildAlong.body} />
+                      </div>
+                    </div>
+                  </section>
+                ) : null}
+              </>
+            )}
+
+            {hasAccess ? (
             <div className="mx-auto mt-14 max-w-[75ch]">
               <Separator />
               <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
@@ -264,6 +315,7 @@ export default async function ChapterPage({
                 </div>
               </div>
             </div>
+            ) : null}
           </main>
         </TermPanelProvider>
       </div>

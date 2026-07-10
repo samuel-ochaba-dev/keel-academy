@@ -9,9 +9,10 @@ import { z } from 'zod'
  * `string | undefined`. When you add a variable, add it here AND to
  * `.env.example` — the schema is the source of truth, the example is the doc.
  *
- * There are no client (`NEXT_PUBLIC_`) variables yet; they arrive with billing
- * (M5). Set `SKIP_ENV_VALIDATION=1` to bypass validation for tooling that runs
- * without secrets.
+ * Billing (M5) adds the first client (`NEXT_PUBLIC_`) variables. All Paddle
+ * vars are optional: when unset the app runs in "open mode" (no paywall), so
+ * local dev and CI need no payment secrets. Set `SKIP_ENV_VALIDATION=1` to
+ * bypass validation for tooling that runs without secrets.
  */
 export const env = createEnv({
   server: {
@@ -32,11 +33,36 @@ export const env = createEnv({
     // sign-in option. Auth.js reads these by convention.
     AUTH_GITHUB_ID: z.string().optional(),
     AUTH_GITHUB_SECRET: z.string().optional(),
+    // Paddle server SDK. Optional: set BOTH to enable enrollment gating. The
+    // API key backs the Node SDK; the webhook secret (pdl_ntfset_…) verifies
+    // inbound signatures. When unset, entitlement checks run in open mode.
+    PADDLE_API_KEY: z.string().optional(),
+    PADDLE_WEBHOOK_SECRET: z.string().optional(),
   },
-  client: {},
-  // Server vars are read from process.env at runtime (Node); only client vars
-  // need explicit destructuring here, and there are none yet.
-  experimental__runtimeEnv: {},
+  client: {
+    // Sandbox for testing, production for live. Drives both Paddle.js and the
+    // server SDK environment. Defaults to sandbox so nothing goes live by mistake.
+    NEXT_PUBLIC_PADDLE_ENV: z
+      .enum(['sandbox', 'production'])
+      .default('sandbox'),
+    // Client-side token (safe to publish) that initializes Paddle.js checkout.
+    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string().optional(),
+    // The two purchasable Paddle price ids: monthly subscription and one-time
+    // lifetime. Each checkout button hides itself when its price id is unset.
+    NEXT_PUBLIC_PADDLE_PRICE_MONTHLY: z.string().optional(),
+    NEXT_PUBLIC_PADDLE_PRICE_LIFETIME: z.string().optional(),
+  },
+  // Next.js inlines NEXT_PUBLIC_* at build; they must be destructured here so
+  // the client bundle sees literal values rather than a runtime process.env read.
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_PADDLE_ENV: process.env.NEXT_PUBLIC_PADDLE_ENV,
+    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN:
+      process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+    NEXT_PUBLIC_PADDLE_PRICE_MONTHLY:
+      process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY,
+    NEXT_PUBLIC_PADDLE_PRICE_LIFETIME:
+      process.env.NEXT_PUBLIC_PADDLE_PRICE_LIFETIME,
+  },
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 })

@@ -2,9 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ArrowRightIcon } from 'lucide-react'
+import { LockIcon } from 'lucide-react'
 import { auth } from '@/auth'
 import { listChapters } from '@keelacademy/content/lookup'
 import { getAllProgress } from '@/lib/progress/service'
+import { isBillingConfigured } from '@/lib/billing/paddle'
+import { hasCourseAccess } from '@/lib/entitlements/service'
 import { siteConfig } from '@/lib/site'
 import type { ChapterStatus } from '@/lib/db/schema'
 import { SiteHeader } from '@/components/site-header'
@@ -39,8 +42,13 @@ export default async function DashboardPage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/sign-in?next=/dashboard')
 
-  const rows = await getAllProgress(session.user.id)
+  const [rows, access] = await Promise.all([
+    getAllProgress(session.user.id),
+    hasCourseAccess(session.user.id),
+  ])
   const bySlug = new Map(rows.map((row) => [row.chapterSlug, row]))
+  // Show the paywall affordance only when billing is actually enforced.
+  const gatingActive = isBillingConfigured() && !access
 
   const chapters = listChapters().map((chapter) => {
     const row = bySlug.get(chapter.slug)
@@ -49,6 +57,7 @@ export default async function DashboardPage() {
       status: row?.status ?? ('not_started' as ChapterStatus),
       percent: row?.percentComplete ?? 0,
       lastVisitedAt: row?.lastVisitedAt ?? null,
+      locked: gatingActive && !chapter.freeSample,
     }
   })
 
@@ -91,6 +100,34 @@ export default async function DashboardPage() {
             </span>
           </p>
         </div>
+
+        {gatingActive ? (
+          <Card className="border-primary/40 bg-primary/5">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4 p-6">
+              <div className="flex items-start gap-3">
+                <span
+                  className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10"
+                  aria-hidden
+                >
+                  <LockIcon className="size-4 text-primary" />
+                </span>
+                <div>
+                  <p className="font-heading font-semibold">
+                    Unlock the full apprenticeship
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Chapter one is free. Enroll to open every other chapter,
+                    build-along, and reference.
+                  </p>
+                </div>
+              </div>
+              <Link href="/billing" className={cn(buttonVariants())}>
+                Get full access
+                <ArrowRightIcon className="size-4" aria-hidden />
+              </Link>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
           <Card>
@@ -142,23 +179,39 @@ export default async function DashboardPage() {
                   <CardTitle className="text-lg">
                     Chapter {chapter.order}: {chapter.title}
                   </CardTitle>
-                  <Badge variant={statusVariant[chapter.status]}>
-                    {statusLabel[chapter.status]}
-                  </Badge>
+                  {chapter.locked ? (
+                    <Badge variant="locked">
+                      <LockIcon className="size-3" aria-hidden />
+                      Locked
+                    </Badge>
+                  ) : (
+                    <Badge variant={statusVariant[chapter.status]}>
+                      {statusLabel[chapter.status]}
+                    </Badge>
+                  )}
                 </div>
                 <CardDescription>{chapter.excerpt}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Progress value={chapter.percent} />
-                <Link
-                  href={chapter.url}
-                  className={cn(
-                    buttonVariants({ variant: 'outline' }),
-                    'w-full',
-                  )}
-                >
-                  Open chapter
-                </Link>
+                {chapter.locked ? (
+                  <Link
+                    href="/billing"
+                    className={cn(buttonVariants(), 'w-full')}
+                  >
+                    Unlock chapter
+                  </Link>
+                ) : (
+                  <Link
+                    href={chapter.url}
+                    className={cn(
+                      buttonVariants({ variant: 'outline' }),
+                      'w-full',
+                    )}
+                  >
+                    Open chapter
+                  </Link>
+                )}
               </CardContent>
             </Card>
           ))}

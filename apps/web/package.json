@@ -22,6 +22,8 @@
     "@keelacademy/email": "workspace:*",
     "@keelacademy/ui": "workspace:*",
     "@libsql/client": "^0.17.4",
+    "@paddle/paddle-js": "1.6.4",
+    "@paddle/paddle-node-sdk": "3.8.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -63,6 +63,11 @@ const chapters = defineCollection({
       part: s.string(),
       order: s.number().int(),
       estReadMinutes: s.number().int().positive(),
+      // Free-sample chapters are fully open (novel, build-along, and their
+      // lexicon/DSA entries) even to anonymous visitors; every other chapter is
+      // gated behind an active enrollment. See lib/entitlements/service.ts.
+      // Defaults to false so a new chapter is paid unless deliberately opened.
+      freeSample: s.boolean().default(false),
       lexicon: s.array(s.string()).default([]),
       dsa: s.array(s.string()).default([]),
       body: s.mdx(),

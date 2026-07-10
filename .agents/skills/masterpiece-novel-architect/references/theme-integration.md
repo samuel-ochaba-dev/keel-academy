@@ -4,7 +4,13 @@
 
 Theme is not what a novel is about. Theme is what a novel DOES to the reader's understanding. It is not a message delivered. It is a pressure applied. In masterwork, theme deforms every element of the story from within, the way gravity deforms spacetime: invisibly, inevitably, and totally.
 
-If you can state the theme in a single sentence, the novel is not a masterpiece. Masterwork themes are irreducible to paraphrase. They can only be experienced through the specific form the novel takes.
+## Invariant core (holds in every contract)
+
+The one universal: **the work generates meaning beyond its literal events.** Whether that meaning is *withheld* (emergent) or *asserted* (moral vision) is the contract's choice, not a mark of quality. What follows — "never state theme," "irreducible to paraphrase," theme-as-inviolable-formal-constraint — is the **emergent-theme contract's** protocol (the ambiguous-literary tradition: James, Flaubert, Chekhov). The **moral-clarity contract** (fable, parable, Tolstoy, Eliot's own moral generalizations, O'Connor, Orwell) states theme openly and is no less masterwork. Commit a contract first (`contract-and-traditions.md`).
+
+## Emergent-theme protocol (ambiguous-literary contract)
+
+In this contract: if you can state the theme in a single sentence, the novel is not doing enough — its themes are irreducible to paraphrase and can only be experienced through the specific form the novel takes. (This is the emergent contract's standard, not a universal law — see the moral-clarity protocol at the end.)
 
 ## How theme operates in masterwork
 
@@ -64,9 +70,7 @@ Place scenes that echo each other at structural distances. The echo creates them
 
 ### Dialogue as thematic vehicle
 
-Characters can discuss the thematic question directly, but only if they are wrong about it or in disagreement. Characters who articulate the theme correctly destroy it by making it explicit.
-
-The most powerful thematic dialogue is where characters talk past each other: each advancing a position that the reader can see is incomplete.
+*In the emergent contract*, characters can discuss the thematic question directly, but only if they are wrong about it or in disagreement; a character who articulates the theme correctly destroys it by making it explicit, and the most powerful thematic dialogue is where characters talk past each other, each advancing a position the reader can see is incomplete. *In the moral-clarity contract*, a character (or the narrator) may voice the theme correctly — the test is not whether it is stated but whether the whole book *earns* it (see the moral-clarity protocol below).
 
 ### The ending as thematic statement
 
@@ -74,9 +78,19 @@ The ending does not resolve the thematic question. It transforms the reader's re
 
 - The ending of Gatsby: "So we beat on, boats against the current, borne back ceaselessly into the past." This does not answer the question of the American Dream. It reframes it as something that can never be answered.
 
+## Moral-clarity theme protocol (fable, parable, Tolstoy, O'Connor, Orwell)
+
+In this contract the theme may be legibly present and even voiced. The power comes not from concealment but from **full embodiment**:
+
+- Build a concrete world and earned consequences, and a figure who *lives* the claim rather than announcing it.
+- The test is not "is it stated?" but **"is it inhabited, or merely announced?"** A stated theme the whole book enacts is doing its job; a stated theme the book only asserts is the failure.
+- Legibility is the point — a parable that could be paraphrased in a sentence can still be a masterpiece, because its power is in the embodiment, not the mystery.
+
+O'Connor (*Mystery and Manners*) held that a story's meaning is inseparable from its concrete particulars *and* that the writer may work from an overt moral vision — the two are not in conflict. This whole protocol is the legitimate alternative to the emergent contract, not a lapse from it.
+
 ## Theme anti-patterns
 
-- **Theme as message**: the novel argues a point and the plot is designed to prove it. This is propaganda, not literature.
+- **Theme as message** *(emergent-contract failure)*: in the emergent/ambiguous contract, a novel that argues a point with a plot designed to prove it collapses into propaganda. But note: in the moral-clarity contract a legible point is the *design*, not a failure — there the failure is a point *announced but not inhabited*, not a point that exists. Apply this anti-pattern per contract.
 - **Theme as symbol**: every element is a symbol for something else, creating an allegory rather than a novel.
 - **Theme as character speech**: a character delivers the thematic conclusion in dialogue, usually near the ending.
 - **Theme as narrator commentary**: the narrator tells the reader what to think about the events.

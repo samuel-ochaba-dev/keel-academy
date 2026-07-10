@@ -4,7 +4,13 @@
 
 Masterwork characters are not people you understand. They are people you RECOGNIZE without being able to fully explain. The reader's relationship to a masterwork character mirrors the relationship we have with real humans: we know them deeply, but something always remains opaque.
 
-A character who can be fully explained is dead on the page. A character who cannot be explained at all is a cipher. Masterwork lives in the tension between knowledge and mystery.
+## Invariant core (holds in every contract)
+
+Two things are true of masterpiece characters in *every* tradition: **they want something and they cohere** (legible desire drives legible causality — true even of Forster's flat characters), and they have **specificity** (they could not be swapped into another novel). Everything else below — opacity, un-explainability, transformation, round-ness — is the **round/opaque contract's** protocol, powerful for ambiguous-literary fiction and *wrong* for comic, mythic, and fable contracts, which want masterful-flat, legible characters. Commit a contract first (`contract-and-traditions.md`), then apply the matching protocol.
+
+## Round/opaque protocol (ambiguous-literary contract)
+
+In this contract: a character who can be fully explained is dead on the page; a character who cannot be explained at all is a cipher. Masterwork lives in the tension between knowledge and mystery. (This is a contract choice, not a universal law — see the masterful-flat protocol at the end.)
 
 ## The five requirements of masterwork characterization
 
@@ -46,13 +52,25 @@ A masterwork character could not exist in a different novel. Their psychology is
 - The character's desires should be desires that only make sense in this specific world. Gatsby's desire to reclaim Daisy is inseparable from the specific American class system of the 1920s.
 - The character's vocabulary, perceptual habits, and emotional range should all be shaped by who they are in this world.
 
-### 5. Opacity (the irreducible mystery)
+### 5. Opacity (the irreducible mystery) — *round/opaque contract only*
 
-Even with deep interiority, something remains unknowable. This is not a failure of characterization. It is its highest achievement.
+Even with deep interiority, something remains unknowable. In the ambiguous contract this is not a failure of characterization but its highest achievement. In comic, fable, and mythic contracts, *legibility* is the achievement (Elizabeth Bennet, Jean Valjean, every parable figure) — do not force opacity onto a character the contract wants clear.
 
 - Leave gaps in the character's self-knowledge. There should be moments where neither the character nor the reader fully understands why they did what they did.
 - Resist the urge to provide childhood trauma or formative experience that "explains" the character. Real people are not explained by their backstory. Neither are masterwork characters.
 - The reader should close the book still thinking about the character. If they feel they fully understand them, the characterization was too shallow.
+
+## Masterful-flat protocol (comic, mythic, fable, moral-clarity contracts)
+
+E.M. Forster (*Aspects of the Novel*, 1927) defends the flat character — Mrs Micawber, Mr Pickwick — as a legitimate and powerful instrument, not a lesser one. A flat character is not a *thin* one:
+
+- Give a single dominant trait, rendered with maximal vividness.
+- Give one unmistakable verbal or physical signature the reader recognizes on every entrance.
+- Let legible desire drive action — the invariant still holds.
+- Permit backstory and explanation where they sharpen function; here they are not a failure.
+- Measure success by **memorability and thematic force**, not by residual mystery.
+
+A fable protagonist who is fully "explained" is working as designed. Comic and mythic contracts often *require* this flatness — the character is a fixed point around which meaning turns, not a psyche to be excavated. Transformation (above) is likewise a choice: the round contract demands change under pressure; a mythic or comic-flat figure may be a fixed point around which others move.
 
 ## Character relationships as meaning
 
