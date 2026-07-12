@@ -3,6 +3,7 @@ import type { NextConfig } from 'next'
 // Side-effect import: validates the environment at build time (fails the build
 // on a missing/invalid var). See lib/env.ts for the schema.
 import './lib/env'
+import { securityHeaders } from './lib/security/headers'
 
 // Content is compiled by Velite inside @keelacademy/content (its `content`/
 // `build` script writes .velite there); Turbo runs it before the app via the
@@ -17,6 +18,14 @@ const nextConfig: NextConfig = {
     '@t3-oss/env-nextjs',
     '@t3-oss/env-core',
   ],
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [...securityHeaders],
+      },
+    ]
+  },
 }
 
 // Sentry wraps the config with source-map upload and release injection.
