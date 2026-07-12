@@ -30,7 +30,14 @@
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", ".velite/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "env": [
+        "NEXT_RUNTIME",
+        "SENTRY_DSN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_AUTH_TOKEN"
+      ]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
