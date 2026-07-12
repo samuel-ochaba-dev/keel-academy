@@ -145,7 +145,7 @@ export default async function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Progress value={overall} />
+              <Progress value={overall} aria-label="Overall course progress" />
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>{overall}% through the shipped content</span>
                 <span>
@@ -200,7 +200,10 @@ export default async function DashboardPage() {
                 <CardDescription>{chapter.excerpt}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Progress value={chapter.percent} />
+                <Progress
+                  value={chapter.percent}
+                  aria-label={`Progress for chapter ${chapter.order}: ${chapter.title}`}
+                />
                 {chapter.locked ? (
                   <Link
                     href="/billing"
@@ -235,7 +238,7 @@ export default async function DashboardPage() {
                             buttonVariants({ variant: 'ghost' }),
                             'cursor-default opacity-60',
                           )}
-                          aria-disabled
+                          aria-disabled="true"
                           title="Unlocks after your tests pass"
                         >
                           <LockIcon className="size-4" aria-hidden />

@@ -299,7 +299,7 @@ export default async function ChapterPage({
                                 buttonVariants({ variant: 'outline' }),
                                 'cursor-not-allowed opacity-60',
                               )}
-                              aria-disabled
+                              aria-disabled="true"
                             >
                               <LockIcon className="size-4" aria-hidden />
                               Locked

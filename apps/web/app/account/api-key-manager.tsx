@@ -81,10 +81,17 @@ export function ApiKeyManager() {
     }
   }
 
-  function copyKey() {
+  async function copyKey() {
     if (!newKey) return
-    navigator.clipboard.writeText(newKey)
-    setCopied(true)
+    try {
+      await navigator.clipboard.writeText(newKey)
+      setCopied(true)
+    } catch {
+      // Clipboard API can fail in insecure contexts or when permissions
+      // are denied. The key is visible in the <code> block so the user
+      // can still select-and-copy manually.
+      setCopied(false)
+    }
   }
 
   return (
@@ -194,6 +201,7 @@ export function ApiKeyManager() {
                   size="sm"
                   onClick={() => handleRevoke(key.id)}
                   disabled={revokingId === key.id}
+                  aria-label={`Revoke API key "${key.name}"`}
                 >
                   <TrashIcon className="size-4" aria-hidden />
                   {revokingId === key.id ? 'Revoking...' : 'Revoke'}
