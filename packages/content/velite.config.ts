@@ -117,6 +117,24 @@ const buildAlongs = defineCollection({
   }),
 })
 
+// Reference implementations are the answer key a student unlocks after their
+// CLI submission reports all tests passing. They live in the same content tree
+// so a chapter's spec, build-along, and reference can change in one commit, but
+// they are NOT public — the reference page (apps/web/app/references/[slug]) is
+// the only surface that renders them, and only after enrollment + a passing
+// test_submission row have been verified. The slug links to the chapter.
+const referenceImplementations = defineCollection({
+  name: 'ReferenceImplementation',
+  pattern: 'references/**/*.mdx',
+  schema: s.object({
+    slug: s.slug('reference'),
+    title: s.string().max(120),
+    summary: s.string().max(300),
+    body: s.mdx(),
+    raw: s.raw(),
+  }),
+})
+
 export default defineConfig({
   root: 'content',
   strict: true,
@@ -125,8 +143,8 @@ export default defineConfig({
   mdx: {
     rehypePlugins: [[rehypePrettyCode, prettyCodeOptions]],
   },
-  collections: { chapters, lexicon, dsa, buildAlongs },
-  prepare: ({ chapters, lexicon, dsa, buildAlongs }) => {
+  collections: { chapters, lexicon, dsa, buildAlongs, referenceImplementations },
+  prepare: ({ chapters, lexicon, dsa, buildAlongs, referenceImplementations }) => {
     const lexSlugs = new Set(lexicon.map((e) => e.slug))
     const dsaSlugs = new Set(dsa.map((e) => e.slug))
     const termSlugs = new Set([...lexSlugs, ...dsaSlugs])
@@ -157,6 +175,16 @@ export default defineConfig({
         if (!termSlugs.has(termSlug)) {
           errors.push(
             `build-along "${buildAlong.slug}": <Term slug="${termSlug}"> has no lexicon/dsa entry`,
+          )
+        }
+      }
+    }
+
+    for (const reference of referenceImplementations) {
+      for (const termSlug of collectTermSlugs(reference.raw)) {
+        if (!termSlugs.has(termSlug)) {
+          errors.push(
+            `reference "${reference.slug}": <Term slug="${termSlug}"> has no lexicon/dsa entry`,
           )
         }
       }

@@ -2,11 +2,13 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import * as Sentry from '@sentry/nextjs'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 // Route-segment error boundary. Must be a Client Component; `reset()` re-renders
-// the segment. Error reporting (Sentry) is wired in M8 — for now we log.
+// the segment. Sentry captures the error in production; console.error fires
+// everywhere so devs see the stack locally.
 export default function Error({
   error,
   reset,
@@ -15,6 +17,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
+    Sentry.captureException(error)
     console.error(error)
   }, [error])
 

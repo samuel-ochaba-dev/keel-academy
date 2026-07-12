@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRightIcon } from 'lucide-react'
-import { LockIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckCircleIcon, LockIcon } from 'lucide-react'
 import { auth } from '@/auth'
-import { listChapters } from '@keelacademy/content/lookup'
+import {
+  getReferenceImplementation,
+  listChapters,
+} from '@keelacademy/content/lookup'
 import { getAllProgress } from '@/lib/progress/service'
 import { isBillingConfigured } from '@/lib/billing/paddle'
 import { hasCourseAccess } from '@/lib/entitlements/service'
+import { getPassingChapterSlugs } from '@/lib/references/service'
 import { siteConfig } from '@/lib/site'
 import type { ChapterStatus } from '@/lib/db/schema'
 import { SiteHeader } from '@/components/site-header'
@@ -42,9 +45,10 @@ export default async function DashboardPage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/sign-in?next=/dashboard')
 
-  const [rows, access] = await Promise.all([
+  const [rows, access, passingSlugs] = await Promise.all([
     getAllProgress(session.user.id),
     hasCourseAccess(session.user.id),
+    getPassingChapterSlugs(session.user.id),
   ])
   const bySlug = new Map(rows.map((row) => [row.chapterSlug, row]))
   // Show the paywall affordance only when billing is actually enforced.
@@ -52,12 +56,15 @@ export default async function DashboardPage() {
 
   const chapters = listChapters().map((chapter) => {
     const row = bySlug.get(chapter.slug)
+    const hasReference = getReferenceImplementation(chapter.slug) !== null
     return {
       ...chapter,
       status: row?.status ?? ('not_started' as ChapterStatus),
       percent: row?.percentComplete ?? 0,
       lastVisitedAt: row?.lastVisitedAt ?? null,
       locked: gatingActive && !chapter.freeSample,
+      hasReference,
+      referenceUnlocked: hasReference && passingSlugs.has(chapter.slug),
     }
   })
 
@@ -202,15 +209,41 @@ export default async function DashboardPage() {
                     Unlock chapter
                   </Link>
                 ) : (
-                  <Link
-                    href={chapter.url}
-                    className={cn(
-                      buttonVariants({ variant: 'outline' }),
-                      'w-full',
-                    )}
-                  >
-                    Open chapter
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={chapter.url}
+                      className={cn(
+                        buttonVariants({ variant: 'outline' }),
+                        'flex-1',
+                      )}
+                    >
+                      Open chapter
+                    </Link>
+                    {chapter.hasReference ? (
+                      chapter.referenceUnlocked ? (
+                        <Link
+                          href={`/references/${chapter.slug}`}
+                          className={cn(buttonVariants({ variant: 'outline' }))}
+                          aria-label={`View reference implementation for chapter ${chapter.order}`}
+                        >
+                          <CheckCircleIcon className="size-4" aria-hidden />
+                          Reference
+                        </Link>
+                      ) : (
+                        <span
+                          className={cn(
+                            buttonVariants({ variant: 'ghost' }),
+                            'cursor-default opacity-60',
+                          )}
+                          aria-disabled
+                          title="Unlocks after your tests pass"
+                        >
+                          <LockIcon className="size-4" aria-hidden />
+                          Reference
+                        </span>
+                      )
+                    ) : null}
+                  </div>
                 )}
               </CardContent>
             </Card>

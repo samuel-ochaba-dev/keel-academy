@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowRightIcon, CheckIcon, MonitorIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckIcon, LockIcon, MonitorIcon } from 'lucide-react'
 import { auth } from '@/auth'
 import {
   getBuildAlong,
   getChapter,
   getChapterEntries,
+  getReferenceImplementation,
   listChapters,
 } from '@keelacademy/content/lookup'
 import {
@@ -15,7 +16,8 @@ import {
   recordChapterVisit,
 } from '@/lib/progress/service'
 import type { ChapterStatus } from '@/lib/db/schema'
-import { canAccessChapter } from '@/lib/entitlements/service'
+import { canAccessChapter, hasCourseAccess } from '@/lib/entitlements/service'
+import { hasPassingSubmission } from '@/lib/references/service'
 import { completeChapterAction } from './actions'
 import { ChapterSidebar, type NavChapter } from '@/components/chapter-sidebar'
 import { ContentPaywall } from '@/components/content-paywall'
@@ -83,6 +85,22 @@ export default async function ChapterPage({
   const chapters = listChapters()
   const entries = getChapterEntries(chapter)
   const buildAlong = getBuildAlong(slug)
+
+  // Reference implementation unlock state. A reference exists for this chapter
+  // only if the content pipeline has one; unlock additionally requires a passing
+  // CLI submission (M7). Anonymous readers never see an unlocked reference —
+  // the link routes them to sign-in, and the reference page enforces the gate.
+  const reference = getReferenceImplementation(slug)
+  const referenceUnlocked =
+    hasAccess && userId
+      ? await (async () => {
+          const [enrolled, passed] = await Promise.all([
+            hasCourseAccess(userId),
+            hasPassingSubmission(userId, slug),
+          ])
+          return enrolled && passed
+        })()
+      : false
 
   // Trim to the nav shape so the client drawer never serializes MDX bodies.
   const navChapters: NavChapter[] = chapters.map((entry) => ({
@@ -238,6 +256,66 @@ export default async function ChapterPage({
                       >
                         <MDXContent code={buildAlong.body} />
                       </div>
+
+                      {reference ? (
+                        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 p-4">
+                          <div className="flex items-start gap-3">
+                            <span
+                              className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full"
+                              aria-hidden
+                            >
+                              {referenceUnlocked ? (
+                                <CheckIcon className="size-4 [color:var(--color-success)]" />
+                              ) : (
+                                <LockIcon className="size-4 text-muted-foreground" />
+                              )}
+                            </span>
+                            <div>
+                              <p className="font-heading font-semibold">
+                                {referenceUnlocked
+                                  ? 'Reference implementation unlocked'
+                                  : 'Reference unlocks after your tests pass'}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {referenceUnlocked
+                                  ? 'Compare your build against the senior\u2019s solution. The test suite is the contract; the reference is a second opinion.'
+                                  : userId
+                                    ? `Run \u201ckeel test ${chapter.order}\u201d then \u201ckeel submit ${chapter.order}\u201d from your project to unlock it.`
+                                    : 'Sign in and submit a passing test result from the CLI to unlock it.'}
+                              </p>
+                            </div>
+                          </div>
+                          {referenceUnlocked ? (
+                            <Link
+                              href={`/references/${slug}`}
+                              className={cn(buttonVariants())}
+                            >
+                              View reference
+                              <ArrowRightIcon className="size-4" aria-hidden />
+                            </Link>
+                          ) : userId ? (
+                            <span
+                              className={cn(
+                                buttonVariants({ variant: 'outline' }),
+                                'cursor-not-allowed opacity-60',
+                              )}
+                              aria-disabled
+                            >
+                              <LockIcon className="size-4" aria-hidden />
+                              Locked
+                            </span>
+                          ) : (
+                            <Link
+                              href={`/sign-in?next=/chapters/${chapter.slug}`}
+                              className={cn(
+                                buttonVariants({ variant: 'outline' }),
+                              )}
+                            >
+                              Sign in to unlock
+                            </Link>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   </section>
                 ) : null}
@@ -245,76 +323,81 @@ export default async function ChapterPage({
             )}
 
             {hasAccess ? (
-            <div className="mx-auto mt-14 max-w-[75ch]">
-              <Separator />
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  {status === 'complete' ? (
-                    <span
-                      className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-success/15"
-                      aria-hidden
-                    >
-                      <CheckIcon className="size-4 [color:var(--color-success)]" />
-                    </span>
-                  ) : null}
-                  <div>
-                    <p className="font-heading text-lg font-semibold">
-                      {status === 'complete'
-                        ? 'Chapter complete'
-                        : 'Finished reading?'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {status === 'complete'
-                        ? 'Nice work — your progress is saved. Keep the momentum going.'
-                        : userId
-                          ? 'Mark it done to track your progress.'
-                          : 'Sign in to save your progress across sessions.'}
-                    </p>
+              <div className="mx-auto mt-14 max-w-[75ch]">
+                <Separator />
+                <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    {status === 'complete' ? (
+                      <span
+                        className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-success/15"
+                        aria-hidden
+                      >
+                        <CheckIcon className="size-4 [color:var(--color-success)]" />
+                      </span>
+                    ) : null}
+                    <div>
+                      <p className="font-heading text-lg font-semibold">
+                        {status === 'complete'
+                          ? 'Chapter complete'
+                          : 'Finished reading?'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {status === 'complete'
+                          ? 'Nice work — your progress is saved. Keep the momentum going.'
+                          : userId
+                            ? 'Mark it done to track your progress.'
+                            : 'Sign in to save your progress across sessions.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {userId ? (
+                      <form
+                        action={completeChapterAction.bind(null, chapter.slug)}
+                      >
+                        <SubmitButton
+                          variant={
+                            status === 'complete' ? 'outline' : 'default'
+                          }
+                          pendingText="Saving…"
+                        >
+                          {status === 'complete'
+                            ? 'Completed'
+                            : 'Mark complete'}
+                        </SubmitButton>
+                      </form>
+                    ) : (
+                      <Link
+                        href={`/sign-in?next=/chapters/${chapter.slug}`}
+                        className={cn(buttonVariants())}
+                      >
+                        Sign in to save progress
+                      </Link>
+                    )}
+                    {nextChapter ? (
+                      <Link
+                        href={nextChapter.url}
+                        className={cn(
+                          buttonVariants({
+                            variant:
+                              status === 'complete' ? 'default' : 'outline',
+                          }),
+                        )}
+                      >
+                        Next: {nextChapter.title}
+                        <ArrowRightIcon className="size-4" aria-hidden />
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/dashboard"
+                        className={cn(buttonVariants({ variant: 'outline' }))}
+                      >
+                        Dashboard
+                      </Link>
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  {userId ? (
-                    <form
-                      action={completeChapterAction.bind(null, chapter.slug)}
-                    >
-                      <SubmitButton
-                        variant={status === 'complete' ? 'outline' : 'default'}
-                        pendingText="Saving…"
-                      >
-                        {status === 'complete' ? 'Completed' : 'Mark complete'}
-                      </SubmitButton>
-                    </form>
-                  ) : (
-                    <Link
-                      href={`/sign-in?next=/chapters/${chapter.slug}`}
-                      className={cn(buttonVariants())}
-                    >
-                      Sign in to save progress
-                    </Link>
-                  )}
-                  {nextChapter ? (
-                    <Link
-                      href={nextChapter.url}
-                      className={cn(
-                        buttonVariants({
-                          variant: status === 'complete' ? 'default' : 'outline',
-                        }),
-                      )}
-                    >
-                      Next: {nextChapter.title}
-                      <ArrowRightIcon className="size-4" aria-hidden />
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/dashboard"
-                      className={cn(buttonVariants({ variant: 'outline' }))}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                </div>
               </div>
-            </div>
             ) : null}
           </main>
         </TermPanelProvider>

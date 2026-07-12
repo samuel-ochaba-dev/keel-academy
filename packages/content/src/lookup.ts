@@ -1,10 +1,17 @@
-import { buildAlongs, chapters, dsa, lexicon } from '#velite'
+import {
+  buildAlongs,
+  chapters,
+  dsa,
+  lexicon,
+  referenceImplementations,
+} from '#velite'
 import type {
   BuildAlong,
   Chapter,
   DsaEntry,
   LexiconEntry,
   ReferenceEntry,
+  ReferenceImplementation,
 } from './collections'
 
 export type {
@@ -13,6 +20,7 @@ export type {
   DsaEntry,
   LexiconEntry,
   ReferenceEntry,
+  ReferenceImplementation,
 } from './collections'
 
 export function listChapters(): Chapter[] {
@@ -61,5 +69,19 @@ export function getChapterForTerm(termSlug: string): Chapter | null {
       (chapter) =>
         chapter.lexicon.includes(termSlug) || chapter.dsa.includes(termSlug),
     ) ?? null
+  )
+}
+
+export function getReferenceImplementation(
+  slug: string,
+): ReferenceImplementation | null {
+  return (
+    referenceImplementations.find((entry) => entry.slug === slug) ?? null
+  )
+}
+
+export function listReferenceImplementations(): ReferenceImplementation[] {
+  return [...referenceImplementations].sort((a, b) =>
+    a.slug.localeCompare(b.slug),
   )
 }

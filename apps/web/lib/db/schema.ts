@@ -295,3 +295,51 @@ export const testSubmissions = sqliteTable(
 
 export type TestSubmissionRow = typeof testSubmissions.$inferSelect
 export type SubmissionStatus = TestSubmissionRow['status']
+
+// --- Reference unlock (M7) --------------------------------------------------
+
+// Append-only audit trail for sensitive actions. For M7 the only event
+// written here is `reference.viewed` — logged inside the same transaction as
+// the progress transition so a reference view never goes unrecorded (RFC-002,
+// design-doc §10.3). M8 (observability) widens this to billing, API keys, and
+// submissions.
+export const auditEvents = sqliteTable(
+  'audit_event',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    // The user who performed the action. Nullable so a future system-actor
+    // event (e.g. a cron job) doesn't need a fake user.
+    actorUserId: text('actor_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    type: text('type', {
+      enum: [
+        'reference.viewed',
+        'auth.sign_in',
+        'auth.sign_out',
+        'auth.token_refresh',
+        'chapter.progress',
+        'page.view',
+        'api.error',
+        'api.mutation',
+      ],
+    }).notNull(),
+    // What the event is about: e.g. the chapter slug whose reference was viewed.
+    // Nullable — events like auth.sign_in have no subject.
+    subjectType: text('subject_type'),
+    subjectId: text('subject_id'),
+    metadata: text('metadata'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => [
+    index('audit_event_actor_idx').on(table.actorUserId),
+    index('audit_event_subject_idx').on(table.subjectType, table.subjectId),
+  ],
+)
+
+export type AuditEventRow = typeof auditEvents.$inferSelect
+export type AuditEventType = AuditEventRow['type']

@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect } from 'react'
-// global-error replaces the root layout, so it must render its own <html>/<body>
-// and import the global stylesheet to get the design tokens + utilities.
-import './globals.css'
-import { Button } from '@/components/ui/button'
+import * as Sentry from '@sentry/nextjs'
+import Error from 'next/error'
 
-// Catches errors thrown in the root layout itself. Only renders in production.
+/**
+ * Global error boundary — renders when the root layout throws.
+ * Captures the error in Sentry and shows a minimal fallback UI.
+ * Next.js 16 convention: `global-error.tsx` replaces the root layout
+ * on error and must define its own `<html>` and `<body>`.
+ */
 export default function GlobalError({
   error,
   reset,
@@ -15,26 +18,26 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    Sentry.captureException(error)
   }, [error])
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-          <div className="space-y-2">
-            <p className="font-heading text-5xl font-semibold text-primary">
-              Error
+      <body className="min-h-screen bg-background text-foreground font-sans">
+        <div className="flex min-h-screen items-center justify-center p-8">
+          <div className="max-w-md text-center space-y-4">
+            <h1 className="text-2xl font-semibold">Something went wrong</h1>
+            <p className="text-muted-foreground text-sm">
+              An unexpected error occurred. Our team has been notified.
             </p>
-            <h1 className="font-heading text-2xl font-semibold tracking-tight">
-              The application hit an unexpected error
-            </h1>
-            <p className="mx-auto max-w-md text-muted-foreground">
-              This one reached the root of the app. Reload to try again.
-            </p>
+            <button
+              onClick={reset}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Try again
+            </button>
           </div>
-          <Button onClick={reset}>Try again</Button>
-        </main>
+        </div>
       </body>
     </html>
   )

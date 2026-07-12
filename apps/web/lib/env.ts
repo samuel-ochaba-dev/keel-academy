@@ -33,6 +33,11 @@ export const env = createEnv({
     // sign-in option. Auth.js reads these by convention.
     AUTH_GITHUB_ID: z.string().optional(),
     AUTH_GITHUB_SECRET: z.string().optional(),
+    // Google OAuth. Optional: set BOTH to enable the "Continue with Google"
+    // sign-in option. Requires Google brand verification before launch (see
+    // docs/ops/launch-checklist.md). Auth.js reads these by convention.
+    AUTH_GOOGLE_ID: z.string().optional(),
+    AUTH_GOOGLE_SECRET: z.string().optional(),
     // Paddle server SDK. Optional: set BOTH to enable enrollment gating. The
     // API key backs the Node SDK; the webhook secret (pdl_ntfset_…) verifies
     // inbound signatures. When unset, entitlement checks run in open mode.
@@ -43,6 +48,14 @@ export const env = createEnv({
     // Checkout buttons stay disabled (no Paddle.js token); the webhook route
     // still 503s. Never set this in production.
     BILLING_FORCE_ENABLED: z.stringbool().optional(),
+    // Sentry DSN for error monitoring. Optional: when unset Sentry is a no-op
+    // (dev and CI run without crash reporting).
+    SENTRY_DSN: z.string().optional(),
+    // Inngest event key for sending events from the app to Inngest. Optional:
+    // when unset Inngest workflows are skipped (dev/CI run without jobs).
+    INNGEST_EVENT_KEY: z.string().optional(),
+    // Inngest signing key for verifying inbound webhook calls from Inngest.
+    INNGEST_SIGNING_KEY: z.string().optional(),
   },
   client: {
     // Sandbox for testing, production for live. Drives both Paddle.js and the

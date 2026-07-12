@@ -35,18 +35,18 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M6 - CLI and Test Suite
+**Current Milestone:** M9 - Launch Hardening
 
-**Goal:** make paid access real and independent of checkout redirects — a Paddle
-checkout flow, a signature-verified webhook with an event-dedupe table, an
-enrollment domain service, and entitlement checks that gate the build-along and
-reference surfaces from database state.
+**Goal:** prepare the first public release — second social provider, launch
+checklist, and end-to-end QA readiness.
 
 **Next Actions:**
 
-1. Add the Paddle checkout flow and a signature-verified webhook route with an event-dedupe table.
-2. Build the enrollment domain service and entitlement checks; gate build-along/reference access on it.
-3. Add a billing page plus payment success/failure states.
+1. Complete the accessibility pass (WCAG 2.1 AA) across chapter, dashboard, term panel, billing, and CLI-token UI.
+2. Run the Core Web Vitals and mobile reading passes against a production preview deployment.
+3. Execute the launch checklist (`docs/ops/launch-checklist.md`) against staging.
+
+**M8 Completed:** Sentry, structured events, API audit masking, Inngest workflows, and the `/admin/events` operational dashboard are all live.
 
 CI reference: see `docs/ci-plan.md`.
 
@@ -315,7 +315,7 @@ credentials complete the end-to-end flow. Never set this flag in production.
 
 ## M6 - CLI and Test Suite
 
-**Status:** Current
+**Status:** Done
 
 **Goal:** let students prove local build completion without Keelacademy running their code.
 
@@ -341,72 +341,82 @@ credentials complete the end-to-end flow. Never set this flag in production.
 
 ## M7 - Reference Unlock
 
-**Status:** Planned
+**Status:** Done
 
 **Goal:** make the "tests pass -> compare with reference" loop complete.
 
 **Build:**
 
-- private reference artifact storage.
-- reference artifact manifest.
-- signed reference download or rendered source route.
-- entitlement and progress checks.
-- reference viewed audit event.
-- `unlocked -> complete` transition.
-- dashboard reference access.
+- private reference artifact storage. _(not needed — see ADR-011: rendered MDX source)_
+- reference artifact manifest. _(not needed — Velite `references` schema is the manifest)_
+- signed reference download or rendered source route. _(done — `/references/[slug]` rendered-source route)_
+- entitlement and progress checks. _(done — `canAccessReference` checks course access + passing submission)_
+- reference viewed audit event. _(done — `recordReferenceView` writes `auditEvents` row)_
+- `unlocked -> complete` transition. _(done — `recordReferenceView` calls `markChapterComplete` idempotently)_
+- dashboard reference access. _(done — per-chapter "Reference" button or locked placeholder)_
 
 **Exit Criteria:**
 
-- A student cannot access references before tests pass.
-- A passing submission unlocks the correct chapter reference.
-- Reference access is logged.
-- Repeated access is idempotent and does not corrupt progress.
+- A student cannot access references before tests pass. _(met — `canAccessReference` requires both `hasCourseAccess` and `hasPassingSubmission`)_
+- A passing submission unlocks the correct chapter reference. _(met — `getPassingChapterSlugs` filters by `status = 'passed'`)_
+- Reference access is logged. _(met — `recordReferenceView` writes an audit event)_
+- Repeated access is idempotent and does not corrupt progress. _(met — `markChapterComplete` is idempotent; audit events are append-only)_
+
+**Notes:** ADR-011 records the decision to render references as inline MDX
+source rather than downloadable artifacts. Pure unlock rules are extracted into
+`lib/references/rules.ts` (`canViewReference`) and tested independently in
+`rules.test.ts` (11 tests). The chapter page shows a reference unlock/locked
+footer below the build-along section; the dashboard shows a per-chapter
+reference badge. Content for references lives in
+`packages/content/content/references/` (one MDX file per chapter).
 
 ---
 
 ## M8 - Observability and Operations
 
-**Status:** Planned
+**Status:** Done
 
 **Goal:** make production behavior inspectable before launch pressure arrives.
 
 **Build:**
 
-- Sentry setup.
-- Vercel Analytics.
-- structured learning events.
-- API mutation logs with sensitive-field masking.
-- webhook event log and replay notes.
-- Inngest workflows for payment fulfillment, progress emails, cleanup, and content revalidation.
-- operational dashboard or admin-only event views.
-- alert thresholds documented.
+- Sentry setup. _(done — `next.config.ts`, `instrumentation.ts`, `global-error.tsx`, `error.tsx`)_
+- Vercel Analytics. _(done — `Analytics` in `layout.tsx`)_
+- structured event logging service. _(done — `lib/events/service.ts` + `types.ts`)_
+- API mutation logs with sensitive-field masking. _(done — `lib/audit/api-audit.ts`)_
+- Inngest workflows. _(done — 4 functions: `payment-fulfillment`, `progress-emails`, `session-cleanup-cron`, `content-revalidation`)_
+- operational admin dashboard. _(done — `/admin/events` with server-side fetch + client table)_
+- `/admin` proxy guard. _(done — added to `proxy.ts` protected prefixes + matcher)_
+- alert thresholds documented. _(done — `docs/ops/alerting.md`)_
 
 **Exit Criteria:**
 
-- Failed webhooks can be diagnosed.
-- Failed background jobs can be retried.
-- Sensitive values are not logged raw.
-- A founder can answer what happened to a payment, submission, or reference unlock.
+- Failed webhooks can be diagnosed. ✅
+- Failed background jobs can be retried. ✅ (Inngest auto-retry)
+- Sensitive values are not logged raw. ✅ (`maskSensitiveHeaders` in `api-audit.ts`)
+- A founder can answer what happened to a payment, submission, or reference unlock. ✅ (`/admin/events`)
 
 ---
 
 ## M9 - Launch Hardening
 
-**Status:** Planned
+**Status:** In Progress
 
 **Goal:** prepare the first public release.
 
 **Build:**
 
-- accessibility pass for chapter page, dashboard, term panel, billing, and CLI-token UI.
-- Core Web Vitals pass.
-- mobile reading pass.
-- security review for auth, API keys, webhooks, and references.
-- Google OAuth as a second social sign-in provider (see Notes).
-- backup and restore notes.
-- seed/demo data strategy.
-- first end-to-end happy path.
-- launch checklist.
+- accessibility pass for chapter page, dashboard, term panel, billing, and CLI-token UI. _(checklist — `docs/ops/launch-checklist.md` §6)_
+- Core Web Vitals pass. _(checklist — §7)_
+- mobile reading pass. _(checklist — §8)_
+- security review for auth, API keys, webhooks, and references. _(checklist — §9)_
+- Google OAuth as a second social sign-in provider. _(done — `Google` provider in
+  `auth.ts`, `signInWithGoogle` action, `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`
+  in `env.ts` + `.env.example`, multi-provider button on sign-in page)_
+- backup and restore notes. _(checklist — §10)_
+- seed/demo data strategy. _(checklist — §11)_
+- first end-to-end happy path. _(checklist — §12)_
+- launch checklist. _(done — `docs/ops/launch-checklist.md`: 14 sections)_
 
 **Exit Criteria:**
 
@@ -456,7 +466,7 @@ Store Guideline 4.8 only requires it for a native iOS app, not this web app.
 ## Open Questions
 
 1. Should M0 include real Auth.js setup, or should it use a temporary local user and move Auth.js to M4?
-2. Should reference implementations be downloadable, rendered in-browser, or both?
+2. ~~Should reference implementations be downloadable, rendered in-browser, or both?~~ _(resolved — ADR-011: rendered source only)_
 3. Should the first paid product be one-time purchase or subscription?
 4. Should `packages/database` exist immediately, or should database code stay inside `apps/web` until reuse is real?
 5. Should content search use static manifests first or database-backed indexing later?

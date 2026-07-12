@@ -1,15 +1,11 @@
 import NextAuth from 'next-auth'
 import GitHub from 'next-auth/providers/github'
+import Google from 'next-auth/providers/google'
 import Resend from 'next-auth/providers/resend'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from '@/lib/db/client'
 import { env } from '@/lib/env'
-import {
-  accounts,
-  sessions,
-  users,
-  verificationTokens,
-} from '@/lib/db/schema'
+import { accounts, sessions, users, verificationTokens } from '@/lib/db/schema'
 
 // Auth.js v5 (real magic-link + Drizzle adapter + DATABASE sessions).
 // IMPORTANT: this must be installed as `next-auth@beta` (5.x). The npm `latest`
@@ -78,6 +74,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // provider verifies ownership, so both sides of the link are email-verified.
     ...(env.AUTH_GITHUB_ID && env.AUTH_GITHUB_SECRET
       ? [GitHub({ allowDangerousEmailAccountLinking: true })]
+      : []),
+    // Google OAuth is optional: only wired when both env vars are set, so local
+    // dev and CI need no OAuth app. Same `allowDangerousEmailAccountLinking`
+    // rationale as GitHub — both sides of the link are email-verified.
+    ...(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET
+      ? [Google({ allowDangerousEmailAccountLinking: true })]
       : []),
   ],
   callbacks: {
