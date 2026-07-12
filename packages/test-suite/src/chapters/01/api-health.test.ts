@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { ChildProcess } from 'node:child_process'
-import { startApp, stopApp } from '../../helpers/app-runner'
+import { startApp, stopApp } from '../../helpers/app-runner.js'
 
 describe('Chapter 01 — API health', () => {
   let proc: ChildProcess | null = null

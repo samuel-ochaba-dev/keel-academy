@@ -12,8 +12,16 @@ concurrency:
 
 jobs:
   verify:
-    name: lint · types · build
+    name: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Both `check-types` and `build` import the validated app environment. These
+    # values prove that contract without granting CI access to any live service.
+    env:
+      AUTH_SECRET: ci-not-a-real-secret-do-not-use
+      AUTH_TRUST_HOST: 'true'
+      TURSO_DATABASE_URL: 'file:local.db'
     steps:
       - uses: actions/checkout@v7
 
@@ -38,11 +46,8 @@ jobs:
       - name: Type-check
         run: pnpm check-types
 
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: pnpm build
-        env:
-          # Build-time env validation (lib/env.ts) requires these. No real
-          # secrets — CI proves the pipeline compiles, not a live deployment.
-          AUTH_SECRET: ci-not-a-real-secret-do-not-use
-          AUTH_TRUST_HOST: 'true'
-          TURSO_DATABASE_URL: 'file:local.db'
