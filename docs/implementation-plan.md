@@ -35,35 +35,54 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M9 - Launch Hardening
+**Current Milestone:** M10 - Release Gate and Plan Truth
 
-**Goal:** prepare the first public release — second social provider, launch
-checklist, and end-to-end QA readiness.
+**Goal:** establish a trustworthy release lane before the first public launch:
+green CI, accurate operating docs, isolated staging, verified integrations, and
+safe production promotion.
+
+**Release-Lane Objective:** establish a repeatable path from green CI and
+aligned docs through isolated staging, evidence-backed validation, staged
+production promotion, rollback, and first-day monitoring.
 
 **Next Actions:**
 
-1. Complete the accessibility pass (WCAG 2.1 AA) across chapter, dashboard, term panel, billing, and CLI-token UI.
-2. Run the Core Web Vitals and mobile reading passes against a production preview deployment.
-3. Execute the launch checklist (`docs/ops/launch-checklist.md`) against staging.
+1. **Complete M10 externally:** choose the launch scope, push this PR, obtain a
+   green GitHub `verify` run, then protect `main` with the strict `verify`
+   status check and a pull-request rule.
+2. **PR 2 / M11:** resolve payment-fulfillment ownership, verify the existing
+   rate-limit policy, enforce admin authorization, add CSP, and cover the
+   security-critical paths with tests.
+3. **PR 3 / M12:** create the persistent staging environment and the browser
+   smoke/release-evidence harness; then execute M13-M16 in order.
 
-**M8 Completed:** Sentry, structured events, API audit masking, Inngest workflows, and the `/admin/events` operational dashboard are all live.
+**M9 Superseded:** its broad launch-hardening scope is now decomposed into the
+seven executable milestones M10-M16 below. M9 remains as the historical
+umbrella record.
 
 CI reference: see `docs/ci-plan.md`.
 
 ## Milestone Overview
 
-| Milestone | Name                         | Outcome                                                                  |
-| --------- | ---------------------------- | ------------------------------------------------------------------------ |
-| M0        | Walking Skeleton             | One tiny end-to-end product path works                                   |
-| M1        | Repo Foundation              | Workspace, Turborepo tasks, UI tokens, and deployment shape are stable   |
-| M2        | Content Pipeline             | MDX content compiles, validates, and renders                             |
-| M3        | Reading Experience           | Chapter page, term panels, and reference pages feel usable               |
-| M4        | Auth and Progress            | Students can sign in and persist chapter state                           |
-| M5        | Billing and Entitlements     | Paddle enrollment controls gated access                                  |
-| M6        | CLI and Test Suite           | Students can run tests and submit signed results                         |
-| M7        | Reference Unlock             | Passing submissions unlock reference artifacts                           |
-| M8        | Observability and Operations | Errors, events, webhooks, jobs, and audit trails are visible             |
-| M9        | Launch Hardening             | Accessibility, performance, security, and happy-path QA are launch-ready |
+| Milestone | Name                          | Outcome                                                                    |
+| --------- | ----------------------------- | -------------------------------------------------------------------------- |
+| M0        | Walking Skeleton              | One tiny end-to-end product path works                                     |
+| M1        | Repo Foundation               | Workspace, Turborepo tasks, UI tokens, and deployment shape are stable     |
+| M2        | Content Pipeline              | MDX content compiles, validates, and renders                               |
+| M3        | Reading Experience            | Chapter page, term panels, and reference pages feel usable                 |
+| M4        | Auth and Progress             | Students can sign in and persist chapter state                             |
+| M5        | Billing and Entitlements      | Paddle enrollment controls gated access                                    |
+| M6        | CLI and Test Suite            | Students can run tests and submit signed results                           |
+| M7        | Reference Unlock              | Passing submissions unlock reference artifacts                             |
+| M8        | Observability and Operations  | Errors, events, webhooks, jobs, and audit trails are visible               |
+| M9        | Launch Hardening (superseded) | Original umbrella; decomposed into the verified M10-M16 release lane       |
+| M10       | Release Gate and Plan Truth   | CI, branch rules, launch scope, and operating docs are trustworthy         |
+| M11       | Security and Payment Path     | Verified rate limits, CSP, and one tested fulfillment path protect traffic |
+| M12       | Staging Foundation            | A stable, isolated staging environment and QA harness exist                |
+| M13       | Integration Validation        | Auth, billing, jobs, database recovery, and CLI work in staging            |
+| M14       | Experience and Ops Evidence   | Accessibility, CWV, mobile, and alerts have release evidence               |
+| M15       | Staged Production Release     | A production-configured build is verified, promotable, and reversible      |
+| M16       | Post-Launch Stabilization     | The first 24 hours are monitored, supported, and assessed                  |
 
 ---
 
@@ -400,9 +419,13 @@ reference badge. Content for references lives in
 
 ## M9 - Launch Hardening
 
-**Status:** In Progress
+**Status:** Superseded by M10-M16
 
 **Goal:** prepare the first public release.
+
+**Migration:** M9's exit criteria remain the release outcome, but its work is
+now sequenced through M10-M16 so that a green local build, a staging pass, and a
+production promotion cannot be confused with one another.
 
 **Build:**
 
@@ -441,6 +464,273 @@ provider (`Google({ allowDangerousEmailAccountLinking: true })` +
 `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` + a button gated on those vars); the
 sign-in page is already structured for it. Apple Sign-In is out of scope — App
 Store Guideline 4.8 only requires it for a native iOS app, not this web app.
+
+---
+
+## M10 - Release Gate and Plan Truth
+
+**Status:** Current
+
+**Covers:** release-lane point 1 of 7 - make the release gate trustworthy.
+
+**Goal:** make `main`, the launch plan, and the operational instructions safe
+to trust before any external staging work begins.
+
+**Build:**
+
+- make the launch scope explicit: a closed one-chapter alpha, or a public
+  16-chapter release; keep the chosen scope in the launch checklist;
+- repair root `pnpm check-types`, including the NodeNext test-suite import;
+- give CI's type-check step the same safe validation contract as its build step;
+- add `pnpm test` to CI and make the single `verify` job—which runs `lint`,
+  `check-types`, `test`, and `build`—a strict required check for `main`;
+- protect `main` with pull-request and required-status-check rules;
+- reconcile docs with code: document the Paddle route as
+  `POST /api/webhooks/paddle`, document the intentional absence of a generic
+  `db:seed` command, and replace stale Turso backup/restore commands;
+- update the launch and security checklists so every claim points to a real
+  route, script, owner, or external control.
+
+**Exit Criteria:**
+
+- `pnpm lint`, `pnpm check-types`, `pnpm test`, and `pnpm build` pass locally
+  and in GitHub Actions.
+- A red CI run cannot merge into `main`.
+- The chosen launch scope and the operational docs match the actual product.
+- There is no known route, command, backup, or webhook-path discrepancy in the
+  launch documentation.
+
+**Notes:** this is immediate PR 1. Do not use `SKIP_ENV_VALIDATION` to make CI
+green; CI should prove the environment contract with harmless throwaway values.
+
+**Local progress (2026-07-12):** the workflow now runs all four root commands
+with job-scoped throwaway environment values; the NodeNext import is corrected;
+and the launch, CI, security, QA-data, and recovery docs have been reconciled.
+`pnpm lint`, `pnpm check-types`, `pnpm test`, and `pnpm build` pass locally.
+M10 remains current until the scope is selected and GitHub records a green
+`verify` run protected by the required-status-check rule.
+
+---
+
+## M11 - Security and Payment Path
+
+**Status:** Planned
+
+**Covers:** release-lane point 2 of 7 - reconcile code, docs, and security
+design before staging.
+
+**Goal:** make the public request surface and money path deliberate, protected,
+and testable before provider traffic reaches the application.
+
+**Build:**
+
+- decide whether Paddle fulfillment is synchronous in the webhook route or
+  asynchronous through Inngest; retain one owner and remove or wire the other
+  path so an event grants access exactly once;
+- verify and test the established rate-limit policy for auth and high-risk API
+  routes, including explicit keys, limits, error responses, and provider
+  visibility;
+- enforce and test server-side admin role authorization; `proxy.ts` remains a
+  coarse cookie-presence gate, so reconcile its `/account` matcher behavior and
+  prevent non-admin sessions from reading `/admin/events`;
+- add a production CSP that permits only the required first-party, Auth.js,
+  Paddle, and Sentry resources; validate it in staging before enforcement;
+- verify webhook signature checks, duplicate delivery handling, API-key
+  ownership, reference gates, and error handling under adversarial tests;
+- ensure production cannot run in open billing mode or with
+  `BILLING_FORCE_ENABLED` enabled;
+- correct the security review so it reports implemented controls separately
+  from planned controls.
+
+**Exit Criteria:**
+
+- A chosen payment event results in one durable entitlement transition, even on
+  replay or failure/retry.
+- Rate-limited client routes return the intended response while verified vendor
+  webhooks remain deliverable.
+- A non-admin session cannot read an admin page or audit-event data, even when
+  it has a valid session cookie.
+- CSP produces no unexplained violations in staging and is enforced before M15.
+- Security claims in docs are backed by tests or an observable provider control.
+
+**Notes:** this is immediate PR 2. It must finish before staging credentials or
+real sandbox payments are configured.
+
+---
+
+## M12 - Staging Foundation
+
+**Status:** Planned
+
+**Covers:** release-lane point 3 of 7 - create a persistent, isolated staging
+environment. This also contains the setup portion of immediate PR 3.
+
+**Goal:** create a stable environment where a release candidate can be safely
+exercised against real provider integrations.
+
+**Build:**
+
+- create a persistent `staging` branch and stable staging domain, or an
+  equivalent Vercel Custom Environment;
+- link the Vercel project and define a development, preview/staging, and
+  production environment-variable matrix;
+- provision isolated staging resources: Turso database, Paddle sandbox,
+  OAuth apps/callbacks, Resend sender/inbox, Inngest keys, Sentry environment,
+  and Upstash Redis;
+- ensure no preview or staging deployment can write to production data or use
+  production provider secrets;
+- decide and document how protected staging deployments admit Paddle and
+  Inngest callbacks without making the rest of staging public;
+- add a non-secret health/readiness smoke endpoint;
+- create the browser-smoke harness and a release-evidence template, ready for
+  execution once the integration paths are live.
+
+**Exit Criteria:**
+
+- A known commit deploys to a stable staging URL with the correct non-production
+  resource identities.
+- The health/readiness endpoint, build logs, and error logs can be inspected by
+  the release owner.
+- Staging callback URLs are reachable by the required providers.
+- The QA account, browser-smoke harness, and release-evidence record exist.
+
+**Notes:** this is immediate PR 3 plus provider/dashboard configuration. The
+browser harness may be built here, but its acceptance run belongs to M14.
+
+---
+
+## M13 - Staging Integration Validation
+
+**Status:** Planned
+
+**Covers:** release-lane point 4 of 7 - prove each external integration in
+staging.
+
+**Goal:** prove the complete student path against isolated, real provider
+integrations rather than local mocks or open billing mode.
+
+**Build:**
+
+- test magic-link delivery, sign-out, session persistence, and GitHub/Google
+  OAuth callbacks with the staging domain;
+- run Paddle sandbox checkout and webhook simulations for success, duplicate
+  delivery, failed renewal, cancellation, and past-due flows;
+- verify the resulting enrollment, audit event, paywall, and reference-access
+  behavior for each relevant billing outcome;
+- validate Inngest discovery at `/api/inngest`, safe runs of every function,
+  retry behavior, and failure visibility;
+- run migrations against the staging Turso database and complete one restore to
+  a disposable database using the documented current procedure;
+- execute the CLI test, signed submission, reference unlock, and dashboard
+  resume loop using a controlled QA user.
+
+**Exit Criteria:**
+
+- One staging user completes sign-in, enrollment, reading, submission,
+  reference unlock, and dashboard resume without manual database repair.
+- Provider event IDs, logs, audit rows, and screenshots are attached to the
+  release-evidence record.
+- Restore, retry, cancellation, and duplicate-delivery behavior are proven and
+  documented.
+
+---
+
+## M14 - Experience and Operations Evidence
+
+**Status:** Planned
+
+**Covers:** release-lane point 5 of 7 - establish browser, accessibility,
+performance, and operational proof.
+
+**Goal:** demonstrate that the release candidate is usable, accessible,
+performant, and observable in the deployed environment.
+
+**Build:**
+
+- run the browser-smoke suite for the signed-out, signed-in, paywalled, and
+  fully entitled student paths;
+- complete keyboard-only and screen-reader passes for home, sign-in, dashboard,
+  chapter reader, term dialog, billing, and CLI-token UI;
+- complete mobile reading checks at 375px and on a real touch device;
+- capture synthetic Core Web Vitals and Lighthouse results for the chapter,
+  dashboard, and sign-in flows; resolve regressions against M9 targets;
+- verify color contrast, reduced motion, focus visibility, skip links, form
+  error announcements, and no-focus-trap behavior;
+- configure Sentry alerts and verify a controlled staging error, Vercel logs,
+  Inngest failures, and Paddle delivery failures reach an owner;
+- complete the launch checklist with deployment URLs, test dates, owners, and
+  evidence links rather than unchecked assertions.
+
+**Exit Criteria:**
+
+- All browser smoke tests pass on the staging release candidate.
+- WCAG 2.1 AA and mobile findings have no unresolved P0/P1 issue.
+- LCP, INP, and CLS meet the documented target on the representative staging
+  pages, with results recorded.
+- Monitoring and alert delivery are demonstrated end to end.
+
+---
+
+## M15 - Staged Production Release
+
+**Status:** Planned
+
+**Covers:** release-lane point 6 of 7 - verify production configuration before
+assigning the public domain, then promote safely.
+
+**Goal:** validate the production configuration before assigning the public
+domain, then promote a known-good build with a tested rollback path.
+
+**Build:**
+
+- audit production environment variables, provider credentials, callback URLs,
+  database schema, and `BILLING_FORCE_ENABLED` absence;
+- create a staged production deployment without auto-assigning the production
+  domain;
+- smoke-test that deployment with production configuration, controlled QA
+  accounts, and the approved payment/support procedure;
+- inspect build, runtime, Sentry, Paddle, and Inngest logs before promotion;
+- record the prior production deployment and execute a rollback rehearsal;
+- manually promote only the validated staged production deployment and publish
+  support/rollback ownership.
+
+**Exit Criteria:**
+
+- A production-configured deployment passes the defined smoke checks before it
+  receives public traffic.
+- No known P0/P1 launch blocker remains.
+- The previous production deployment can be restored without a rebuild.
+- Support, rollback, and escalation paths are documented and assigned.
+
+---
+
+## M16 - Post-Launch Stabilization
+
+**Status:** Planned
+
+**Covers:** release-lane point 7 of 7 - monitor and support the first 24 hours.
+
+**Goal:** treat the first 24 hours as a monitored release phase, not the end of
+validation.
+
+**Build:**
+
+- review production sign-ins, checkout attempts, webhook deliveries, entitlement
+  changes, reference unlocks, Inngest runs, and error rates at 5 minutes,
+  1 hour, and 24 hours;
+- respond to alerts using the documented support and rollback paths;
+- verify that real traffic meets the performance and accessibility expectations
+  established in M14;
+- record incidents, support requests, provider anomalies, and follow-up owners;
+- publish a launch assessment: continue, pause sales, or roll back.
+
+**Exit Criteria:**
+
+- The first 24-hour monitoring window is complete with no unresolved P0/P1
+  incident.
+- The founder can account for payments, background jobs, errors, and support
+  requests from the recorded evidence.
+- Any remaining issue is prioritized into the backlog with an owner and target.
 
 ---
 

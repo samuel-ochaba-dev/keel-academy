@@ -1,7 +1,20 @@
-# Launch Checklist (M9 — Launch Hardening)
+# Launch Checklist (M10–M16 Release Lane)
 
 > Pre-flight checklist for going live. Each item is a gate — do not deploy to
 > production until every box is checked.
+
+## 0. Launch Scope (owner decision)
+
+Choose exactly one scope before staging or production resources are configured.
+Do not treat the unselected option as implied.
+
+- [ ] **Closed one-chapter alpha:** invite-only access, Chapter 1 only, and a
+      named support/feedback owner. This is the recommended first external
+      release.
+- [ ] **Public 16-chapter release:** public acquisition, all chapters published,
+      full support coverage, and every M10–M16 gate complete.
+- [ ] Record the selected scope, decision owner, and date here:
+      **Selected scope: pending founder decision.**
 
 ## 1. Environment & Secrets
 
@@ -28,8 +41,11 @@
 
 - [ ] `pnpm db:push` run against the **production** Turso database.
 - [ ] Schema matches `apps/web/lib/db/schema.ts` (no drift).
-- [ ] Backups configured in Turso (automated daily snapshots enabled).
-- [ ] Restore procedure documented and tested at least once (see §8 below).
+- [ ] The selected Turso plan provides the required point-in-time recovery (PITR)
+      retention; record the retention, RPO, and owner in
+      `docs/ops/backup-restore.md`.
+- [ ] Restore procedure documented and tested at least once against a disposable
+      database (see §10 below).
 
 ## 3. Authentication & Sessions
 
@@ -42,8 +58,10 @@
 
 ## 4. Billing & Entitlement
 
-- [ ] Paddle webhook endpoint reachable: `https://<prod-domain>/api/paddle/webhook`.
-- [ ] Webhook signature verification passes (no 401s on real events).
+- [ ] Paddle webhook endpoint reachable:
+      `https://<prod-domain>/api/webhooks/paddle`.
+- [ ] Valid Paddle deliveries are accepted and an invalid signature is rejected
+      without an enrollment write.
 - [ ] Checkout flow works for both monthly and lifetime price ids.
 - [ ] Entitlement check respects `enrolled` flag (locked chapters show paywall).
 - [ ] Open mode is NOT active in production (no `BILLING_FORCE_ENABLED`).
@@ -89,7 +107,9 @@
 
 ## 9. Security Review
 
-- [ ] `proxy.ts` rate limits applied to auth and API routes.
+- [ ] The existing rate-limit policy is verified for auth and high-risk API
+      routes; record its owner, provider/configuration location, limits, and
+      expected `429` response in release evidence (M11).
 - [ ] API route handlers validate input (no untrusted data to DB queries).
 - [ ] Webhook signatures verified (Paddle, Inngest) before processing.
 - [ ] No secrets in client bundle (only `NEXT_PUBLIC_*` vars are public).
@@ -101,19 +121,26 @@
 
 ## 10. Backup & Restore
 
-- [ ] Turso automated backups enabled (daily snapshots, 30-day retention).
-- [ ] Restore tested: `turso db shell <db> < backup.sql` or Turso restore UI.
+- [ ] Turso PITR retention matches the selected plan and documented RPO.
+- [ ] Restore tested by creating a new database from a timestamp, rotating its
+      token, and pointing a disposable staging deployment at it.
 - [ ] Document RPO (recovery point objective) and RTO (recovery time objective).
 - [ ] Content (MDX) is in git — no separate backup needed (git is the source).
 - [ ] User-generated data (progress, CLI tokens, enrollments) is in Turso —
-      back up via Turso snapshots. Test restore into a staging database.
+      recover it through the documented Turso PITR procedure and test the
+      restore against a staging database.
 
 ## 11. Seed / Demo Data
 
-- [ ] No seed data in production database (use `pnpm db:seed` only in staging).
-- [ ] Demo student account created for QA (magic-link email, not OAuth).
-- [ ] Demo enrolled student for billing flow testing (entitlement active).
-- [ ] Admin account protected (no public admin route without server-side guard).
+- [ ] Production contains no seed or demo data. The repository deliberately has
+      no `pnpm db:seed` command; use the controlled procedure in
+      `docs/ops/qa-data.md` for staging only.
+- [ ] QA student account created through the normal magic-link flow in staging
+      (not OAuth), with its owner and cleanup date recorded.
+- [ ] QA enrolled student is created only through the staging Paddle sandbox flow
+      or a documented staging-only entitlement fixture.
+- [ ] Server-side role authorization prevents a non-admin session from reading
+      `/admin` data (M11 release blocker).
 
 ## 12. End-to-End Happy Path
 
@@ -126,8 +153,12 @@
 
 ## 13. CI/CD
 
-- [ ] `pnpm lint` passes (eslint + tsc --noEmit).
+- [ ] `pnpm lint` passes (ESLint with zero warnings).
+- [ ] `pnpm check-types` passes (including Next type generation and strict TypeScript).
+- [ ] `pnpm test` passes (all package test suites).
 - [ ] `pnpm build` passes (production build, no warnings).
+- [ ] GitHub protects `main` with a pull-request rule and strict required
+      `verify` status check after the first green `verify` run.
 - [ ] Vercel preview deployment created and smoke-tested.
 - [ ] Vercel production deployment promoted from a passing preview.
 - [ ] Inngest functions deployed and synced (Inngest dashboard shows all functions).
