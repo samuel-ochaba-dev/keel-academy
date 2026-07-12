@@ -1,6 +1,55 @@
 import { createEnv } from '@t3-oss/env-nextjs'
 import { z } from 'zod'
 
+type BillingRuntimeEnv = {
+  VERCEL_ENV?: 'development' | 'preview' | 'production'
+  NEXT_PUBLIC_PADDLE_ENV: 'sandbox' | 'production'
+  PADDLE_API_KEY?: string
+  PADDLE_WEBHOOK_SECRET?: string
+  NEXT_PUBLIC_PADDLE_CLIENT_TOKEN?: string
+  NEXT_PUBLIC_PADDLE_PRICE_MONTHLY?: string
+  NEXT_PUBLIC_PADDLE_PRICE_LIFETIME?: string
+  BILLING_FORCE_ENABLED?: boolean
+}
+
+export function getProductionBillingConfigErrors(
+  env: BillingRuntimeEnv,
+): string[] {
+  const isProduction =
+    env.VERCEL_ENV === 'production' ||
+    env.NEXT_PUBLIC_PADDLE_ENV === 'production'
+
+  if (!isProduction) return []
+
+  const errors: string[] = []
+  if (env.BILLING_FORCE_ENABLED) {
+    errors.push('BILLING_FORCE_ENABLED must not be set in production')
+  }
+
+  const required: Array<keyof BillingRuntimeEnv> = [
+    'PADDLE_API_KEY',
+    'PADDLE_WEBHOOK_SECRET',
+    'NEXT_PUBLIC_PADDLE_CLIENT_TOKEN',
+    'NEXT_PUBLIC_PADDLE_PRICE_MONTHLY',
+    'NEXT_PUBLIC_PADDLE_PRICE_LIFETIME',
+  ]
+
+  for (const key of required) {
+    if (!env[key]) errors.push(`${key} is required in production`)
+  }
+
+  return errors
+}
+
+function assertProductionBillingConfig(env: BillingRuntimeEnv): void {
+  const errors = getProductionBillingConfigErrors(env)
+  if (errors.length === 0) return
+
+  throw new Error(
+    `Invalid production billing configuration: ${errors.join('; ')}`,
+  )
+}
+
 /**
  * Typed, validated environment contract.
  *
@@ -20,6 +69,8 @@ export const env = createEnv({
     AUTH_SECRET: z.string().min(1),
     // Auth.js trusts the forwarded Host header when true (needed behind proxies).
     AUTH_TRUST_HOST: z.stringbool().optional(),
+    // Vercel deployment target. Used to fail closed for production billing.
+    VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
     // libSQL/Turso connection. Defaults to a local file so dev needs no secrets.
     TURSO_DATABASE_URL: z.string().min(1).default('file:local.db'),
     TURSO_AUTH_TOKEN: z.string().optional(),
@@ -84,3 +135,5 @@ export const env = createEnv({
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 })
+
+assertProductionBillingConfig(env)

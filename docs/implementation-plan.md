@@ -399,7 +399,9 @@ reference badge. Content for references lives in
 - Vercel Analytics. _(done — `Analytics` in `layout.tsx`)_
 - structured event logging service. _(done — `lib/events/service.ts` + `types.ts`)_
 - API mutation logs with sensitive-field masking. _(done — `lib/audit/api-audit.ts`)_
-- Inngest workflows. _(done — 4 functions: `payment-fulfillment`, `progress-emails`, `session-cleanup-cron`, `content-revalidation`)_
+- Inngest workflows. _(done — `progress-emails`, `session-cleanup-cron`, and
+  `content-revalidation`; payment fulfillment is owned by the signed Paddle
+  webhook route)_
 - operational admin dashboard. _(done — `/admin/events` with server-side fetch + client table)_
 - `/admin` proxy guard. _(done — added to `proxy.ts` protected prefixes + matcher)_
 - alert thresholds documented. _(done — `docs/ops/alerting.md`)_
@@ -554,6 +556,15 @@ and testable before provider traffic reaches the application.
 
 **Notes:** this is immediate PR 2. It must finish before staging credentials or
 real sandbox payments are configured.
+
+**Local progress (2026-07-12):** the first M11 implementation pass selects the
+signed Paddle webhook route as the single payment-fulfillment owner, removes the
+stale Inngest payment workflow from registration, adds `user.role` with a
+default `student` role, protects `/account` in the shared protected-route
+helper, blocks non-admin sessions from `/admin/events`, adds enforced security
+headers including CSP, and fails production builds that would run in open
+billing mode or with `BILLING_FORCE_ENABLED`. Rate-limit provider evidence and
+deployed staging CSP/payment validation remain pending.
 
 ---
 

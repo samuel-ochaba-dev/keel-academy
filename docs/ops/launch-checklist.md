@@ -58,6 +58,9 @@ Do not treat the unselected option as implied.
 - [ ] Session cleanup cron running (Inngest `session-cleanup-cron` function).
 - [ ] Sign-out works and redirects to `/`.
 - [ ] Protected routes redirect to `/sign-in?next=…` when unauthenticated.
+- [ ] Named admin account created through normal sign-in, promoted deliberately
+      by setting `user.role = 'admin'`, and recorded with owner/date in release
+      evidence.
 
 ## 4. Billing & Entitlement
 
@@ -144,7 +147,8 @@ Do not treat the unselected option as implied.
 - [ ] QA enrolled student is created only through the staging Paddle sandbox flow
       or a documented staging-only entitlement fixture.
 - [ ] Server-side role authorization prevents a non-admin session from reading
-      `/admin` data (M11 release blocker).
+      `/admin` data; source-level role checks and tests are present, with
+      deployed staging proof still required before launch.
 
 ## 12. End-to-End Happy Path
 

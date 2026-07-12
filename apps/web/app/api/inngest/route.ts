@@ -4,8 +4,8 @@
  * functions exported from `lib/inngest/functions/` (see that directory's
  * manifest for the full list).
  *
- * M8 workflows registered here: payment fulfillment, progress email,
- * session cleanup cron, and content revalidation.
+ * Workflows registered here: progress email, session cleanup cron, and content
+ * revalidation. Payment fulfillment is owned by the signed Paddle webhook route.
  */
 
 import { serve } from 'inngest/next'

@@ -7,13 +7,11 @@
  * array below.
  */
 
-import { paymentFulfillment } from './payment-fulfillment'
 import { progressEmails } from './progress-emails'
 import { sessionCleanupCron } from './session-cleanup-cron'
 import { contentRevalidation } from './content-revalidation'
 
 export const functions = [
-  paymentFulfillment,
   progressEmails,
   sessionCleanupCron,
   contentRevalidation,

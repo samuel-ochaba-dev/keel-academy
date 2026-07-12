@@ -50,15 +50,15 @@ Dub's strongest lesson is not "use the same vendors." It is that production-grad
 
 Keelacademy should adopt those standards while making different stack choices where the domain requires it:
 
-| Concern | Dub Pattern | Keelacademy Decision |
-| --- | --- | --- |
-| Repo shape | Turborepo with app plus internal packages | pnpm workspace from day one: web, UI, content, email, CLI, test-suite, config |
-| Framework | Next.js App Router on Vercel | Next.js 16 App Router on Vercel |
-| Data access | Prisma + PlanetScale | Drizzle + Turso/libSQL |
-| Analytics | High-volume click analytics via Tinybird | Product analytics + learning events; start simple, preserve event contracts |
-| Payments | Stripe | Paddle because Merchant of Record matters for a Nigerian founder |
-| Jobs | QStash/Upstash Workflow | Inngest for event-driven orchestration and solo-dev observability |
-| API discipline | Zod schemas, OpenAPI, wrappers | Same discipline with Drizzle/Auth.js/Paddle-specific implementations |
+| Concern        | Dub Pattern                               | Keelacademy Decision                                                          |
+| -------------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
+| Repo shape     | Turborepo with app plus internal packages | pnpm workspace from day one: web, UI, content, email, CLI, test-suite, config |
+| Framework      | Next.js App Router on Vercel              | Next.js 16 App Router on Vercel                                               |
+| Data access    | Prisma + PlanetScale                      | Drizzle + Turso/libSQL                                                        |
+| Analytics      | High-volume click analytics via Tinybird  | Product analytics + learning events; start simple, preserve event contracts   |
+| Payments       | Stripe                                    | Paddle because Merchant of Record matters for a Nigerian founder              |
+| Jobs           | QStash/Upstash Workflow                   | Inngest for event-driven orchestration and solo-dev observability             |
+| API discipline | Zod schemas, OpenAPI, wrappers            | Same discipline with Drizzle/Auth.js/Paddle-specific implementations          |
 
 ---
 
@@ -122,7 +122,6 @@ Core Services
   |     |-- rate limits, token/session cache, short-lived idempotency keys
   |
   |-- Inngest
-  |     |-- payment fulfillment
   |     |-- progress events
   |     |-- email workflows
   |     |-- cleanup and revalidation jobs
@@ -139,23 +138,23 @@ Core Services
 
 ### 5.2 Tech Stack
 
-| Layer | Technology | Rationale |
-| --- | --- | --- |
-| Framework | Next.js 16 App Router | Server Components for content, route handlers for external APIs, `proxy.ts` for request interception |
-| Language | TypeScript strict | Shared contracts across web, CLI, content, and tests |
-| Workspace | pnpm workspaces | Required for web app, CLI, test suite, content tooling, email, shared UI |
-| Database | Turso/libSQL | SQLite ergonomics with managed replicas for read-heavy learning pages |
-| ORM | Drizzle | SQL-first, lightweight, serverless-friendly |
-| Auth | Auth.js v5 | Magic link + GitHub OAuth, database sessions, Drizzle adapter |
-| Cache | Upstash Redis | Rate limits, session/token cache, idempotency windows |
-| Payments | Paddle Billing | Merchant of Record, checkout, tax handling, webhooks |
-| Jobs | Inngest | Event-driven workflows with retries, step history, and cron |
-| Content | MDX + Velite | Content as code with typed content manifests and build-time validation |
-| UI | Tailwind CSS v4 + shadcn/ui | Token-driven, accessible primitives, no custom component reinvention |
-| Email | Resend + React Email | Versioned transactional templates in the repo |
-| Storage | Vercel Blob or Cloudflare R2 | Private reference artifacts served through signed access |
-| Observability | Sentry + Vercel Analytics + structured app events | Errors, Web Vitals, job failures, learning funnel visibility |
-| Deployment | Vercel | Preview deployments, managed Next.js runtime, fast rollback |
+| Layer         | Technology                                        | Rationale                                                                                            |
+| ------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Framework     | Next.js 16 App Router                             | Server Components for content, route handlers for external APIs, `proxy.ts` for request interception |
+| Language      | TypeScript strict                                 | Shared contracts across web, CLI, content, and tests                                                 |
+| Workspace     | pnpm workspaces                                   | Required for web app, CLI, test suite, content tooling, email, shared UI                             |
+| Database      | Turso/libSQL                                      | SQLite ergonomics with managed replicas for read-heavy learning pages                                |
+| ORM           | Drizzle                                           | SQL-first, lightweight, serverless-friendly                                                          |
+| Auth          | Auth.js v5                                        | Magic link + GitHub OAuth, database sessions, Drizzle adapter                                        |
+| Cache         | Upstash Redis                                     | Rate limits, session/token cache, idempotency windows                                                |
+| Payments      | Paddle Billing                                    | Merchant of Record, checkout, tax handling, webhooks                                                 |
+| Jobs          | Inngest                                           | Event-driven workflows with retries, step history, and cron                                          |
+| Content       | MDX + Velite                                      | Content as code with typed content manifests and build-time validation                               |
+| UI            | Tailwind CSS v4 + shadcn/ui                       | Token-driven, accessible primitives, no custom component reinvention                                 |
+| Email         | Resend + React Email                              | Versioned transactional templates in the repo                                                        |
+| Storage       | Vercel Blob or Cloudflare R2                      | Private reference artifacts served through signed access                                             |
+| Observability | Sentry + Vercel Analytics + structured app events | Errors, Web Vitals, job failures, learning funnel visibility                                         |
+| Deployment    | Vercel                                            | Preview deployments, managed Next.js runtime, fast rollback                                          |
 
 ---
 
@@ -365,16 +364,16 @@ webhook_events
 
 Indexes are part of the design, not an afterthought.
 
-| Table | Required Indexes |
-| --- | --- |
-| `users` | unique email |
-| `sessions` | unique session token, user id |
-| `enrollments` | user id, Paddle customer id, Paddle subscription id |
-| `chapter_progress` | unique user id + chapter slug, user id + state |
-| `test_submissions` | user id + chapter slug + submitted_at, signature hash |
-| `api_keys` | unique hashed key, user id + revoked_at |
-| `webhook_events` | unique provider + provider event id, status + received_at |
-| `audit_events` | actor user id + created_at, subject type + subject id |
+| Table              | Required Indexes                                          |
+| ------------------ | --------------------------------------------------------- |
+| `users`            | unique email                                              |
+| `sessions`         | unique session token, user id                             |
+| `enrollments`      | user id, Paddle customer id, Paddle subscription id       |
+| `chapter_progress` | unique user id + chapter slug, user id + state            |
+| `test_submissions` | user id + chapter slug + submitted_at, signature hash     |
+| `api_keys`         | unique hashed key, user id + revoked_at                   |
+| `webhook_events`   | unique provider + provider event id, status + received_at |
+| `audit_events`     | actor user id + created_at, subject type + subject id     |
 
 ### 7.3 State Machines
 
@@ -444,13 +443,13 @@ Every route handler follows the same shape:
 
 Example route responsibilities:
 
-| Route | Caller | Responsibility |
-| --- | --- | --- |
-| `POST /api/submissions` | `keel` CLI | verify API key, validate HMAC, record submission, emit progress event |
+| Route                               | Caller         | Responsibility                                                        |
+| ----------------------------------- | -------------- | --------------------------------------------------------------------- |
+| `POST /api/submissions`             | `keel` CLI     | verify API key, validate HMAC, record submission, emit progress event |
 | `GET /api/references/[chapterSlug]` | browser or CLI | verify entitlement and progress, return signed URL or rendered source |
-| `POST /api/webhooks/paddle` | Paddle | verify signature, dedupe event id, enqueue fulfillment |
-| `POST /api/webhooks/inngest` | Inngest | serve background function endpoint |
-| `POST /api/account/api-keys` | dashboard | create hashed CLI key |
+| `POST /api/webhooks/paddle`         | Paddle         | verify signature, dedupe event id, fulfill enrollment idempotently    |
+| `POST /api/webhooks/inngest`        | Inngest        | serve background function endpoint                                    |
+| `POST /api/account/api-keys`        | dashboard      | create hashed CLI key                                                 |
 
 Stable error format:
 
@@ -502,7 +501,9 @@ Stable error format:
 2. Paddle handles payment, tax, fraud, and receipts.
 3. Paddle sends a webhook to `/api/webhooks/paddle`.
 4. Route handler verifies signature and dedupes by provider event id.
-5. Inngest processes fulfillment, updates enrollment, emits `enrollment.activated`, and sends email.
+5. Route-owned fulfillment updates enrollment idempotently inside the signed
+   webhook path; follow-up email or analytics can be emitted after the durable
+   entitlement write.
 6. Dashboard reflects access from database state, not from checkout redirect params.
 
 ---
@@ -526,16 +527,16 @@ Stable error format:
 
 Production-grade means the founder can answer "what happened?" without guessing.
 
-| Concern | Implementation |
-| --- | --- |
-| Application errors | Sentry with release and route context |
-| Web Vitals | Vercel Analytics |
-| Learning events | structured events: chapter viewed, term opened, build started, tests passed, reference viewed |
-| API logs | mutation logs with actor, route pattern, status, duration, masked request/response |
-| Webhooks | `webhook_events` table with raw provider id, status, retries, errors |
-| Jobs | Inngest run history and alerts |
-| Audit trail | `audit_events` for billing, API keys, submissions, reference access |
-| Incident response | rollback via Vercel, replay failed Inngest jobs, reprocess webhook events |
+| Concern            | Implementation                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| Application errors | Sentry with release and route context                                                         |
+| Web Vitals         | Vercel Analytics                                                                              |
+| Learning events    | structured events: chapter viewed, term opened, build started, tests passed, reference viewed |
+| API logs           | mutation logs with actor, route pattern, status, duration, masked request/response            |
+| Webhooks           | `webhook_events` table with raw provider id, status, retries, errors                          |
+| Jobs               | Inngest run history and alerts                                                                |
+| Audit trail        | `audit_events` for billing, API keys, submissions, reference access                           |
+| Incident response  | rollback via Vercel, replay failed Inngest jobs, reprocess webhook events                     |
 
 Alert on:
 
@@ -551,14 +552,14 @@ Alert on:
 
 Tests should match product risk.
 
-| Layer | Coverage |
-| --- | --- |
-| Domain services | progress transitions, entitlement checks, submission verification, billing fulfillment |
-| Route handlers | auth failures, bad input, idempotency, happy path |
-| Content compiler | broken term links, duplicate slugs, missing metadata |
-| CLI | auth flow, payload signing, submit command, error display |
-| E2E | enroll -> read -> submit -> unlock reference |
-| Accessibility | chapter page, term panel, checkout, dashboard navigation |
+| Layer            | Coverage                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| Domain services  | progress transitions, entitlement checks, submission verification, billing fulfillment |
+| Route handlers   | auth failures, bad input, idempotency, happy path                                      |
+| Content compiler | broken term links, duplicate slugs, missing metadata                                   |
+| CLI              | auth flow, payload signing, submit command, error display                              |
+| E2E              | enroll -> read -> submit -> unlock reference                                           |
+| Accessibility    | chapter page, term panel, checkout, dashboard navigation                               |
 
 Do not rely on browser E2E for domain rules. Domain rules belong in fast service tests.
 
@@ -635,13 +636,13 @@ Preview deployments should not share production data. Webhook endpoints in previ
 
 ## Appendix A: Dub Comparison
 
-| Concern | Dub | Keelacademy |
-| --- | --- | --- |
-| Product unit | link, workspace, partner program | chapter, enrollment, progress, submission |
-| Scale pressure | redirect latency and click ingestion | reading speed, content validation, progress integrity |
-| External API | public link/analytics APIs | CLI submissions, references, future content API |
-| Entitlements | plan limits, roles, workspace permissions | active enrollment, chapter prerequisite, reference unlock |
-| Event stream | clicks, leads, sales, webhooks | reading, build, submissions, billing, reference access |
+| Concern          | Dub                                                       | Keelacademy                                                |
+| ---------------- | --------------------------------------------------------- | ---------------------------------------------------------- |
+| Product unit     | link, workspace, partner program                          | chapter, enrollment, progress, submission                  |
+| Scale pressure   | redirect latency and click ingestion                      | reading speed, content validation, progress integrity      |
+| External API     | public link/analytics APIs                                | CLI submissions, references, future content API            |
+| Entitlements     | plan limits, roles, workspace permissions                 | active enrollment, chapter prerequisite, reference unlock  |
+| Event stream     | clicks, leads, sales, webhooks                            | reading, build, submissions, billing, reference access     |
 | Operational risk | redirect failures, analytics loss, billing/webhook issues | payment fulfillment, locked references, bad progress state |
 
 What Keelacademy should copy:

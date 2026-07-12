@@ -24,7 +24,13 @@ export const users = sqliteTable('user', {
   email: text('email').unique(),
   emailVerified: integer('emailVerified', { mode: 'timestamp_ms' }),
   image: text('image'),
+  role: text('role', { enum: ['student', 'admin'] })
+    .notNull()
+    .default('student'),
 })
+
+export type UserRow = typeof users.$inferSelect
+export type UserRole = UserRow['role']
 
 export const accounts = sqliteTable(
   'account',

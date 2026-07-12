@@ -1,4 +1,4 @@
-# Security Review (M10 Baseline; M11 Verification Pending)
+# Security Review (M11 Source Baseline; Staging Verification Pending)
 
 > Threat-model review of auth, API surface, webhooks, and the reference
 > implementation gate. Each section lists the control, its status, and any
@@ -9,7 +9,9 @@
 This is a source-review baseline, not a production attestation. “Implemented”
 means the control was observed in the checked-in code; provider configuration,
 rate-limit behavior, and real callback delivery must be evidenced in staging.
-M11 owns that validation and the fixes called out as release blockers below.
+M11 owns that validation. The source-level blockers found in M10 are being
+resolved here; provider and staging evidence still must be attached before
+release.
 
 ## 1. Authentication (Auth.js v5)
 
@@ -57,16 +59,15 @@ M11 owns that validation and the fixes called out as release blockers below.
 
 - **Control:** Coarse request-level protection — the proxy checks for the
   presence of an Auth.js session cookie and redirects anonymous users from
-  `/dashboard`, `/billing`, and `/admin`. Business authorization belongs in
-  server/domain code.
+  `/dashboard`, `/billing`, `/account`, and `/admin`. Business authorization
+  belongs in server/domain code.
 - **Status:** ✅ Source reviewed. `proxy.ts` does **not** rate-limit requests,
   validate a session against the database, or make an admin-role decision.
-- **Release blocker:** its matcher includes `/account`, but the protected-prefix
-  list does not; the proxy therefore does not redirect `/account`. M11 must
-  reconcile that behavior and test the route's server-side authorization.
-- **Release blocker:** `app/admin/events/page.tsx` currently reads audit events
-  without an observed server-side role check. M11 must add and test role-based
-  authorization before any staging/public release.
+- **Status:** ✅ `/account` is included in the shared protected-route helper and
+  covered by `lib/auth/protected-routes.test.ts`.
+- **Status:** ✅ `app/admin/events/page.tsx` requires a valid session and an
+  `admin` role before reading audit events. `lib/admin/service.test.ts` covers
+  missing, student, and admin users.
 
 ### Input validation
 
@@ -120,20 +121,24 @@ M11 owns that validation and the fixes called out as release blockers below.
 ### Paddle
 
 - **Control:** Signature verification before processing. HMAC-SHA256 with
-  `PADDLE_WEBHOOK_SECRET`. Idempotent via `paddle_events` table (dedup by
+  `PADDLE_WEBHOOK_SECRET`. Idempotent via `webhook_event` table (dedup by
   event id).
 - **Status:** ✅ `app/api/webhooks/paddle/route.ts` uses Paddle's
   `webhooks.unmarshal` against the raw payload, then claims the event in the
   local ledger before fulfillment. Processed event IDs return a duplicate result;
   failures remain retryable.
-- **Risk:** M11 must select and test the single fulfillment owner (synchronous
-  route versus Inngest), including duplicate delivery and retry behavior.
+- **Status:** ✅ The signed Paddle webhook route is the single fulfillment
+  owner. The stale Inngest payment workflow is no longer registered.
+- **Risk:** Paddle sandbox delivery still must prove valid signature acceptance,
+  duplicate delivery, failure/retry behavior, and entitlement effects in M13.
 
 ### Inngest
 
 - **Control:** Inngest signing key verified on `/api/inngest` route. Only
   Inngest can trigger functions.
-- **Status:** ✅ `inngestClient` configured with `INNGEST_SIGNING_KEY`.
+- **Status:** ✅ `inngestClient` configured with `INNGEST_SIGNING_KEY`. Current
+  registered functions are progress email, session cleanup, and content
+  revalidation; payment fulfillment is not an Inngest function.
 - **Risk:** None identified.
 
 ## 5. Reference Implementation Gate
@@ -157,19 +162,18 @@ M11 owns that validation and the fixes called out as release blockers below.
   `TURSO_AUTH_TOKEN`, `INNGEST_SIGNING_KEY`, `SENTRY_DSN`) are server-only.
 - **Error pages:** `error.tsx` and `global-error.tsx` show generic messages;
   the real error goes to Sentry, never to the DOM.
-- **Admin:** `proxy.ts` only performs a session-cookie presence check. The
-  observed `/admin/events` page has no server-side role check, so it is an M11
-  release blocker rather than a completed control.
+- **Admin:** `proxy.ts` only performs a session-cookie presence check.
+  `/admin/events` now enforces a server-side `admin` role before reading audit
+  events.
 - **Strict TypeScript:** `any` is banned by ESLint. No `any` in production
   code.
 
-## 7. Content Security Policy (Future)
+## 7. Content Security Policy
 
-- **Status:** ⚠️ Not yet implemented. CSP headers must be added before launch
-  with an allowlist derived from the actual first-party, Auth.js, Paddle, and
-  Sentry resources. This product does not use Stripe.
-- **Action:** Add CSP in M11, start with staging report-only validation, then
-  enforce after Paddle sandbox and observability flows are verified.
+- **Status:** ✅ Implemented in `lib/security/headers.ts` and wired through
+  `next.config.ts` as an enforced `Content-Security-Policy` header.
+- **Risk:** Staging must still validate that Paddle checkout, Auth.js callbacks,
+  Sentry, and Vercel Analytics do not produce unexplained CSP violations.
 
 ## 8. Summary
 
@@ -178,8 +182,8 @@ M11 owns that validation and the fixes called out as release blockers below.
 | Auth (magic link + OAuth)  | ⚠️     | Code present; rate-limit/staging proof pending |
 | API surface                | ⚠️     | Key routes reviewed; M11 audit remains         |
 | API keys                   | ✅     | Hashed, revocable, user-scoped                 |
-| Webhooks (Paddle, Inngest) | ⚠️     | Code present; fulfillment path must be chosen  |
+| Webhooks (Paddle, Inngest) | ⚠️     | Source path chosen; staging proof pending      |
 | Reference gate             | ✅     | HMAC + test-count verification                 |
-| Admin authorization        | ❌     | Server-side role check is an M11 blocker       |
+| Admin authorization        | ✅     | Server-side role check implemented and tested  |
 | Secrets                    | ✅     | No secrets in client bundle                    |
-| CSP                        | ⚠️     | Add before public launch                       |
+| CSP                        | ⚠️     | Implemented; staging violation review pending  |
