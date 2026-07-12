@@ -35,11 +35,10 @@ This plan follows three credible planning ideas:
 
 ## Current Focus
 
-**Current Milestone:** M10 - Release Gate and Plan Truth
+**Current Milestone:** M11 - Security and Payment Path
 
-**Goal:** establish a trustworthy release lane before the first public launch:
-green CI, accurate operating docs, isolated staging, verified integrations, and
-safe production promotion.
+**Goal:** make the public request surface and money path deliberate, protected,
+and testable before provider traffic reaches the application.
 
 **Release-Lane Objective:** establish a repeatable path from green CI and
 aligned docs through isolated staging, evidence-backed validation, staged
@@ -47,13 +46,10 @@ production promotion, rollback, and first-day monitoring.
 
 **Next Actions:**
 
-1. **Complete M10 externally:** choose the launch scope, push this PR, obtain a
-   green GitHub `verify` run, then protect `main` with the strict `verify`
-   status check and a pull-request rule.
-2. **PR 2 / M11:** resolve payment-fulfillment ownership, verify the existing
+1. **PR 2 / M11:** resolve payment-fulfillment ownership, verify the existing
    rate-limit policy, enforce admin authorization, add CSP, and cover the
    security-critical paths with tests.
-3. **PR 3 / M12:** create the persistent staging environment and the browser
+2. **PR 3 / M12:** create the persistent staging environment and the browser
    smoke/release-evidence harness; then execute M13-M16 in order.
 
 **M9 Superseded:** its broad launch-hardening scope is now decomposed into the
@@ -469,7 +465,7 @@ Store Guideline 4.8 only requires it for a native iOS app, not this web app.
 
 ## M10 - Release Gate and Plan Truth
 
-**Status:** Current
+**Status:** Done
 
 **Covers:** release-lane point 1 of 7 - make the release gate trustworthy.
 
@@ -503,18 +499,21 @@ to trust before any external staging work begins.
 **Notes:** this is immediate PR 1. Do not use `SKIP_ENV_VALIDATION` to make CI
 green; CI should prove the environment contract with harmless throwaway values.
 
-**Local progress (2026-07-12):** the workflow now runs all four root commands
-with job-scoped throwaway environment values; the NodeNext import is corrected;
-and the launch, CI, security, QA-data, and recovery docs have been reconciled.
-`pnpm lint`, `pnpm check-types`, `pnpm test`, and `pnpm build` pass locally.
-M10 remains current until the scope is selected and GitHub records a green
-`verify` run protected by the required-status-check rule.
+**Completion (2026-07-12):** the selected launch scope is a closed
+one-chapter alpha, matching the single published Chapter 1 content fixture.
+The workflow runs all four root commands with job-scoped throwaway environment
+values; the NodeNext import is corrected; and the launch, CI, security,
+QA-data, and recovery docs have been reconciled. `pnpm lint`,
+`pnpm check-types`, `pnpm test`, and `pnpm build` passed locally. GitHub
+recorded green `CI / verify` runs on `main`, and the active `main` ruleset
+requires pull requests plus the strict `verify` status check with no bypass
+actors.
 
 ---
 
 ## M11 - Security and Payment Path
 
-**Status:** Planned
+**Status:** Current
 
 **Covers:** release-lane point 2 of 7 - reconcile code, docs, and security
 design before staging.

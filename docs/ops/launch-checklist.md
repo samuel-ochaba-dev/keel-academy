@@ -8,13 +8,16 @@
 Choose exactly one scope before staging or production resources are configured.
 Do not treat the unselected option as implied.
 
-- [ ] **Closed one-chapter alpha:** invite-only access, Chapter 1 only, and a
+- [x] **Closed one-chapter alpha:** invite-only access, Chapter 1 only, and a
       named support/feedback owner. This is the recommended first external
       release.
 - [ ] **Public 16-chapter release:** public acquisition, all chapters published,
       full support coverage, and every M10–M16 gate complete.
-- [ ] Record the selected scope, decision owner, and date here:
-      **Selected scope: pending founder decision.**
+- [x] Record the selected scope, decision owner, and date here:
+      **Selected scope: closed one-chapter alpha. Decision owner: founder.
+      Date: 2026-07-12. Rationale: the repository currently contains one
+      chapter (`packages/content/content/chapters/the-first-commit.mdx`), so
+      public 16-chapter launch is not the truthful release scope yet.**
 
 ## 1. Environment & Secrets
 
@@ -70,7 +73,8 @@ Do not treat the unselected option as implied.
 ## 5. Content Pipeline
 
 - [ ] `pnpm build` completes with no Velite validation errors.
-- [ ] All 16 chapters published (status: `published` in frontmatter).
+- [ ] Selected-scope content is published: Chapter 1 for the closed alpha, or
+      all 16 chapters for a later public release.
 - [ ] Cross-references resolve (no broken `Term` / `Callout` references).
 - [ ] MDX renders correctly (code highlighting, custom components).
 - [ ] Content revalidation Inngest function wired and triggering on deploy.
@@ -157,7 +161,7 @@ Do not treat the unselected option as implied.
 - [ ] `pnpm check-types` passes (including Next type generation and strict TypeScript).
 - [ ] `pnpm test` passes (all package test suites).
 - [ ] `pnpm build` passes (production build, no warnings).
-- [ ] GitHub protects `main` with a pull-request rule and strict required
+- [x] GitHub protects `main` with a pull-request rule and strict required
       `verify` status check after the first green `verify` run.
 - [ ] Vercel preview deployment created and smoke-tested.
 - [ ] Vercel production deployment promoted from a passing preview.
