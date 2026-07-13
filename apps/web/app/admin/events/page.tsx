@@ -11,6 +11,7 @@ import { auditEvents } from '@/lib/db/schema'
 import { desc, gte } from 'drizzle-orm'
 import { notFound, redirect } from 'next/navigation'
 import { auth } from '@/auth'
+import { SiteHeader } from '@/components/site-header'
 import { isAdminUser } from '@/lib/admin/service'
 import { AuditEventsClient } from './client'
 
@@ -40,12 +41,15 @@ export default async function AdminEventsPage() {
     .limit(500)
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8">
-      <h1 className="text-2xl font-bold">Audit Events</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Last 7 days — up to 500 most recent events.
-      </p>
-      <AuditEventsClient rows={rows} />
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main className="mx-auto max-w-5xl px-6 py-8 md:px-10">
+        <h1 className="text-2xl font-bold">Audit Events</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Last 7 days — up to 500 most recent events.
+        </p>
+        <AuditEventsClient rows={rows} />
+      </main>
     </div>
   )
 }
