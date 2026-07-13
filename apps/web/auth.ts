@@ -3,6 +3,7 @@ import GitHub from 'next-auth/providers/github'
 import Google from 'next-auth/providers/google'
 import Resend from 'next-auth/providers/resend'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
+import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { env } from '@/lib/env'
 import { accounts, sessions, users, verificationTokens } from '@/lib/db/schema'
@@ -18,13 +19,34 @@ import { accounts, sessions, users, verificationTokens } from '@/lib/db/schema'
 // prints to the terminal (zero secrets), and only a set AUTH_RESEND_KEY sends a
 // real email. `resend` + the email template are imported lazily so a page that
 // only calls `auth()` never pulls them into its bundle.
+const drizzleAdapter = DrizzleAdapter(db, {
+  usersTable: users,
+  accountsTable: accounts,
+  sessionsTable: sessions,
+  verificationTokensTable: verificationTokens,
+})
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  adapter: {
+    ...drizzleAdapter,
+    async useVerificationToken({ identifier, token }) {
+      if (identifier) {
+        return drizzleAdapter.useVerificationToken!({ identifier, token })
+      }
+
+      // Auth.js permits email callback links without an identifier, but the
+      // official Drizzle adapter currently requires one. Terminal hyperlinking
+      // can omit the trailing `&email=...`, so atomically consume the hashed,
+      // single-use token alone as Auth.js supports.
+      const result = await db
+        .delete(verificationTokens)
+        .where(eq(verificationTokens.token, token))
+        .returning()
+        .get()
+
+      return result ?? null
+    },
+  },
   session: { strategy: 'database' },
   pages: {
     signIn: '/sign-in',
