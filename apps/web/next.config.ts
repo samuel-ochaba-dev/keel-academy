@@ -3,7 +3,10 @@ import type { NextConfig } from 'next'
 // Side-effect import: validates the environment at build time (fails the build
 // on a missing/invalid var). See lib/env.ts for the schema.
 import './lib/env'
-import { securityHeaders } from './lib/security/headers'
+import {
+  developmentSecurityHeaders,
+  securityHeaders,
+} from './lib/security/headers'
 
 // Content is compiled by Velite inside @keelacademy/content (its `content`/
 // `build` script writes .velite there); Turbo runs it before the app via the
@@ -19,10 +22,17 @@ const nextConfig: NextConfig = {
     '@t3-oss/env-core',
   ],
   async headers() {
+    const headers =
+      // Next.js always sets NODE_ENV; this is not a user-supplied Turbo input.
+      // eslint-disable-next-line turbo/no-undeclared-env-vars
+      process.env.NODE_ENV === 'development'
+        ? developmentSecurityHeaders
+        : securityHeaders
+
     return [
       {
         source: '/:path*',
-        headers: [...securityHeaders],
+        headers: [...headers],
       },
     ]
   },

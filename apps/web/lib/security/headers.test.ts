@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { contentSecurityPolicy, securityHeaders } from './headers'
+import {
+  contentSecurityPolicy,
+  developmentContentSecurityPolicy,
+  securityHeaders,
+} from './headers'
 
 describe('securityHeaders', () => {
   it('ships an enforced CSP header', () => {
@@ -17,6 +21,11 @@ describe('securityHeaders', () => {
     expect(contentSecurityPolicy).toContain(
       'https://vitals.vercel-insights.com',
     )
+  })
+
+  it('allows eval only for Next.js development tooling', () => {
+    expect(developmentContentSecurityPolicy).toContain("'unsafe-eval'")
+    expect(contentSecurityPolicy).not.toContain("'unsafe-eval'")
   })
 
   it('denies framing and plugin/object execution', () => {
